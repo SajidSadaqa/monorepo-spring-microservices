@@ -1,0 +1,15 @@
+server:
+  port: 8081
+  ssl:
+    enabled: false
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/users_db
+    username: postgres
+    password: AhmadSajidSura2003
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true

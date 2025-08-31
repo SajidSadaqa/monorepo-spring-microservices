@@ -1,0 +1,21 @@
+server:
+  port: 8082
+  ssl:
+    enabled: false
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/admin_db
+    username: postgres
+    password: postgres
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+
+user-service:
+  url: http://localhost:8081
+
+s2s:
+  audience: user-service

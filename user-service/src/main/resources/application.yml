@@ -1,0 +1,29 @@
+server:
+  port: 8444
+  ssl:
+    enabled: true
+    key-store: classpath:certs/keystore.jks
+    key-store-password: Sajid2003
+    key-store-type: JKS
+    trust-store: classpath:certs/truststore.jks
+    trust-store-password: Sajid2003
+    trust-store-type: JKS
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/users_db
+    username: postgres
+    password: AhmadSajidSura2003
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate.jdbc.time_zone: UTC
+  flyway:
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+security:
+  jwt:
+    access-seconds: 900
+    refresh-seconds: 604800
