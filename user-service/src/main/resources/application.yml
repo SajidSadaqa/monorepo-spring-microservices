@@ -3,10 +3,10 @@ server:
   ssl:
     enabled: true
     key-store: classpath:certs/keystore.jks
-    key-store-password: Sajid2003
+    key-store-password: user123
     key-store-type: JKS
-    trust-store: classpath:certs/truststore.jks
-    trust-store-password: Sajid2003
+    trust-store: classpath:certs/keystone.jks
+    trust-store-password: user123
     trust-store-type: JKS
 
 spring:

@@ -8,23 +8,20 @@ import com.example.user.exceptions.BusinessException;
 import com.example.user.repository.RoleRepository;
 import com.example.user.repository.UserRepository;
 import com.example.user.security.JwtService;
+import com.example.user.service.RefreshTokenService;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import org.springframework.context.MessageSource;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.example.user.service.RefreshTokenService;
 
-@NoArgsConstructor(force = true)
-@AllArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class AuthServiceImpl implements com.example.user.service.AuthService {
 
   private final UserRepository users;
@@ -42,20 +39,20 @@ public class AuthServiceImpl implements com.example.user.service.AuthService {
     if (users.existsByEmail(req.email())) {
       throw new BusinessException("EMAIL_TAKEN", "auth.email.taken");
     }
-    Role userRole = roles.findByName("ROLE_USER").orElseGet(() -> roles.save(Role.builder().name("ROLE_USER").build()));
-    User u =
-      User.builder()
-        .username(req.username())
-        .email(req.email())
-        .passwordHash(encoder.encode(req.password()))
-        .enabled(true)
-        .createdAt(Instant.now())
-        .updatedAt(Instant.now())
-        .roles(Set.of(userRole))
-        .build();
+    Role userRole = roles.findByName("ROLE_USER")
+      .orElseGet(() -> roles.save(Role.builder().name("ROLE_USER").build()));
+    User u = User.builder()
+      .username(req.username())
+      .email(req.email())
+      .passwordHash(encoder.encode(req.password()))
+      .enabled(true)
+      .createdAt(Instant.now())
+      .updatedAt(Instant.now())
+      .roles(Set.of(userRole))
+      .build();
     u = users.save(u);
     var auths = List.of(new SimpleGrantedAuthority("ROLE_USER"));
-    String access = jwtService.createAccess(u.getUsername(), auths, "user-service", java.util.List.of("user-service"));
+    String access = jwtService.createAccess(u.getUsername(), auths, "user-service", List.of("user-service"));
     String refresh = refreshTokens.issueForUser(u);
     return new TokenResponse(access, refresh, 900);
   }
@@ -67,7 +64,7 @@ public class AuthServiceImpl implements com.example.user.service.AuthService {
       throw new BadCredentialsException("auth.login.invalid");
     }
     var auths = u.getRoles().stream().map(r -> new SimpleGrantedAuthority(r.getName())).toList();
-    String access = jwtService.createAccess(u.getUsername(), auths, "user-service", java.util.List.of("user-service"));
+    String access = jwtService.createAccess(u.getUsername(), auths, "user-service", List.of("user-service"));
     String refresh = refreshTokens.issueForUser(u);
     return new TokenResponse(access, refresh, 900);
   }
@@ -75,13 +72,14 @@ public class AuthServiceImpl implements com.example.user.service.AuthService {
   @Override
   public TokenResponse refresh(String refreshToken) {
     var jwt = jwtService.decode(refreshToken);
-        if (!"refresh".equals(jwt.getClaims().get("typ"))) {
-            throw new BadCredentialsException("jwt.refresh.required");
-          }
-        String username = jwt.getSubject();
-        var u = users.findByUsername(username).orElseThrow(() -> new BadCredentialsException("auth.login.invalid"));
+    if (!"refresh".equals(jwt.getClaims().get("typ"))) {
+      throw new BadCredentialsException("jwt.refresh.required");
+    }
+    String username = jwt.getSubject();
+    var u = users.findByUsername(username).orElseThrow(() -> new BadCredentialsException("auth.login.invalid"));
     var auths = u.getRoles().stream().map(r -> new SimpleGrantedAuthority(r.getName())).toList();
-    String access = jwtService.createAccess(username, auths, "user-service", java.util.List.of("user-service"));
+    String access = jwtService.createAccess(username, auths, "user-service", List.of("user-service"));
     String newRefresh = refreshTokens.rotate(refreshToken);
-    return new TokenResponse(access, newRefresh, 900);  }
+    return new TokenResponse(access, newRefresh, 900);
+  }
 }

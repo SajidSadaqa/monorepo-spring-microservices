@@ -10,6 +10,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI; // <-- add this import
+
 @RestController
 @RequestMapping("/api/auth")
 @Tag(name = "Authentication")
@@ -21,7 +23,11 @@ public class AuthController {
 
   @PostMapping("/signup")
   public ResponseEntity<TokenResponse> signup(@Valid @RequestBody SignupReq req) {
-    return ResponseEntity.ok(auth.signup(req));
+    TokenResponse tokens = auth.signup(req);
+    // If you don’t have a user resource route, you can use URI.create("/api/auth/signup")
+    return ResponseEntity
+      .created(URI.create("/api/users/" + req.username())) // 201 + Location header
+      .body(tokens);
   }
 
   @PostMapping("/login")

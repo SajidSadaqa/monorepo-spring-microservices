@@ -36,7 +36,7 @@ class RefreshTokenRotationTest {
     String refresh = RestAssured.given().contentType(ContentType.JSON)
       .body(Map.of("username","rotator","password","Str0ngPass!","email","rotator@example.com"))
       .post("/api/auth/signup")
-      .then().statusCode(200)
+      .then().statusCode(201)
       .extract().jsonPath().getString("refreshToken");
 
     // first refresh succeeds and returns a new refresh token
