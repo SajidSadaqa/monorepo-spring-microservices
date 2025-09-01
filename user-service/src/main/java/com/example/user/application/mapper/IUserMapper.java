@@ -10,7 +10,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
-public interface UserMapper {
+public interface IUserMapper {
   @Mapping(target = "roles", expression = "java(mapRoles(user.getRoles()))")
   UserResponseDto toDto(User user);
 

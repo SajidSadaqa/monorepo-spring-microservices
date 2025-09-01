@@ -1,9 +1,9 @@
 package com.example.user.application.service.impl;
 
-import com.example.user.application.service.UserApplicationService;
+import com.example.user.application.mapper.IUserMapper;
+import com.example.user.application.service.IUserApplicationService;
 import com.example.user.application.dto.PageResponse;
 import com.example.user.application.dto.UserResponseDto;
-import com.example.user.application.mapper.UserMapper;
 import com.example.user.infrastructure.persistence.UserJpaRepository;
 
 import java.util.UUID;
@@ -17,12 +17,12 @@ import com.example.user.interfaces.exception.ResourceNotFoundException;
 
 
 @Service
-public class UserApplicationServiceImpl implements UserApplicationService {
+public class IUserApplicationServiceImpl implements IUserApplicationService {
 
   private final UserJpaRepository users;
-  private final UserMapper mapper;
+  private final IUserMapper mapper;
 
-  public UserApplicationServiceImpl(UserJpaRepository users, UserMapper mapper) {
+  public IUserApplicationServiceImpl(UserJpaRepository users, IUserMapper mapper) {
     this.users = users;
     this.mapper = mapper;
   }
@@ -35,7 +35,7 @@ public class UserApplicationServiceImpl implements UserApplicationService {
   }
 
   @Override
-  // UserApplicationService
+  // IUserApplicationService
   public UserResponseDto getById(UUID id) {
     return users.findById(id)
       .map(UserResponseDto::fromEntity)

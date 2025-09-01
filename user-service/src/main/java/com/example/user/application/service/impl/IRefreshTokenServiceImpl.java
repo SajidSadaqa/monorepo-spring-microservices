@@ -1,6 +1,6 @@
 package com.example.user.application.service.impl;
 
-import com.example.user.application.service.RefreshTokenService;
+import com.example.user.application.service.IRefreshTokenService;
 import com.example.user.domain.model.RefreshToken;
 import com.example.user.domain.model.User;
 import com.example.user.domain.repository.RefreshTokenRepository;
@@ -15,13 +15,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class RefreshTokenServiceImpl implements RefreshTokenService {
+public class IRefreshTokenServiceImpl implements IRefreshTokenService {
 
   private final RefreshTokenRepository tokens;
   private final UserJpaRepository users;
   private final JwtService jwt;
 
-  public RefreshTokenServiceImpl(RefreshTokenRepository tokens, UserJpaRepository users, JwtService jwt) {
+  public IRefreshTokenServiceImpl(RefreshTokenRepository tokens, UserJpaRepository users, JwtService jwt) {
     this.tokens = tokens;
     this.users = users;
     this.jwt = jwt;

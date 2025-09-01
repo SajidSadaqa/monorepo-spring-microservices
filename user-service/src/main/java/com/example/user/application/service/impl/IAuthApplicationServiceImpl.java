@@ -1,6 +1,6 @@
 package com.example.user.application.service.impl;
 
-import com.example.user.application.service.RefreshTokenService;
+import com.example.user.application.service.IRefreshTokenService;
 import com.example.user.domain.model.Role;
 import com.example.user.domain.model.User;
 import com.example.user.application.dto.SignupReq;
@@ -9,7 +9,7 @@ import com.example.user.interfaces.exception.BusinessException;
 import com.example.user.domain.repository.RoleRepository;
 import com.example.user.infrastructure.persistence.UserJpaRepository;
 import com.example.user.infrastructure.security.JwtService;
-import com.example.user.application.service.AuthApplicationService;
+import com.example.user.application.service.IAuthApplicationService;
 
 import java.time.Instant;
 import java.util.List;
@@ -24,13 +24,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class AuthApplicationServiceImpl implements AuthApplicationService {
+public class IAuthApplicationServiceImpl implements IAuthApplicationService {
 
   private final UserJpaRepository users;
   private final RoleRepository roles;
   private final PasswordEncoder encoder;
   private final JwtService jwtService;
-  private final RefreshTokenService refreshTokens;
+  private final IRefreshTokenService refreshTokens;
 
   @Override
   @Transactional

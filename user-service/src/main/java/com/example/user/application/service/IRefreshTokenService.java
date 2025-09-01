@@ -2,7 +2,7 @@ package com.example.user.application.service;
 
 import com.example.user.domain.model.User;
 
-public interface RefreshTokenService {
+public interface IRefreshTokenService {
   /** Issues a new refresh token for the given user, persists its JTI and expiry, and returns the token. */
   String issueForUser(User user);
 

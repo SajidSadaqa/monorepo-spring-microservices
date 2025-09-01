@@ -5,7 +5,7 @@ import com.example.user.application.dto.UserResponseDto;
 import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 
-public interface UserApplicationService {
+public interface IUserApplicationService {
   PageResponse<UserResponseDto> list(Pageable pageable);
   UserResponseDto getById(UUID id);
   UserResponseDto getInternalById(UUID id);

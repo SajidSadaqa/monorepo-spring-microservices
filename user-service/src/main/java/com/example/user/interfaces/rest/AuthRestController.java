@@ -3,7 +3,7 @@ package com.example.user.interfaces.rest;
 import com.example.user.application.dto.AuthReq;
 import com.example.user.application.dto.SignupReq;
 import com.example.user.application.dto.TokenResponse;
-import com.example.user.application.service.AuthApplicationService;
+import com.example.user.application.service.IAuthApplicationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
@@ -17,9 +17,9 @@ import java.net.URI; // <-- add this import
 @Tag(name = "Authentication")
 public class AuthRestController {
 
-  private final AuthApplicationService auth;
+  private final IAuthApplicationService auth;
 
-  public AuthRestController(AuthApplicationService auth) { this.auth = auth; }
+  public AuthRestController(IAuthApplicationService auth) { this.auth = auth; }
 
   @PostMapping("/signup")
   public ResponseEntity<TokenResponse> signup(@Valid @RequestBody SignupReq req) {
