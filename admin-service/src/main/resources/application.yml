@@ -22,7 +22,9 @@ spring:
   flyway:
     locations: classpath:db/migration
     baseline-on-migrate: true
-
+  messages:
+    basename: messages
+    encoding: UTF-8
 security:
   jwt:
     public-key: classpath:certs/jwt-public.pem
