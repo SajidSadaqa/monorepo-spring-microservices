@@ -1,40 +1,41 @@
 server:
-  port: 8443
+  port: 8446
   ssl:
     enabled: true
-    key-store: classpath:certs/keystore.jks
-    key-store-password: admin123
-    key-store-type: JKS
-    trust-store: classpath:certs/keystore.jks
-    trust-store-password: admin123
-    trust-store-type: JKS
+    key-store: classpath:tls/admin-keystore.p12
+    key-store-password: ${SSL_KEYSTORE_PASSWORD:admin123}
+    key-store-type: PKCS12
+    trust-store: classpath:tls/admin-truststore.p12
+    trust-store-password: ${SSL_TRUSTSTORE_PASSWORD:admin123}
+    trust-store-type: PKCS12
 
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/admin_db
     username: postgres
-    password: AhmadSajidSura2003
+    password: ${POSTGRES_PASSWORD:AhmadSajidSura2003}
+    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: validate
-    properties:
-      hibernate.jdbc.time_zone: UTC
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
   flyway:
     locations: classpath:db/migration
     baseline-on-migrate: true
 
-user-service:
-  url: https://localhost:8444
-
-s2s:
-  audience: user-service
-  keystore:
-    path: certs/keystore.jks
-    password: changeit
-  truststore:
-    path: certs/truststore.jks
-    password: changeit
-
 security:
   jwt:
+    public-key: classpath:certs/jwt-public.pem
+    private-key: classpath:certs/jwt-private.pem
     access-seconds: 900
+    issuer: admin-service
+    expiration: 3600
+
+user-service:
+  url: https://localhost:8445
+  trust-store: classpath:tls/user-truststore.p12
+  trust-store-password: user123
+  key-store: classpath:tls/admin-keystore.p12
+  key-store-password: admin123
+  key-password: admin123
+

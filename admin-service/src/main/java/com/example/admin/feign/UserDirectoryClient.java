@@ -7,7 +7,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
 @FeignClient(
-  name = "userDirectoryClient",
+  name = "user-service",
   url = "${user-service.url}",
   configuration = S2SFeignConfig.class)
 public interface UserDirectoryClient {

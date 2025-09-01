@@ -1,19 +1,20 @@
 server:
-  port: 8444
+  port: 8445
   ssl:
     enabled: true
-    key-store: classpath:certs/keystore.jks
+    key-store: classpath:tls/user-keystore.p12
     key-store-password: user123
-    key-store-type: JKS
-    trust-store: classpath:certs/keystore.jks
+    key-store-type: PKCS12
+    trust-store: classpath:tls/user-truststore.p12
     trust-store-password: user123
-    trust-store-type: JKS
+    trust-store-type: PKCS12
 
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/users_db
     username: postgres
     password: AhmadSajidSura2003
+    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: validate
@@ -25,5 +26,12 @@ spring:
 
 security:
   jwt:
+    public-key: classpath:certs/jwt-public.pem
+    issuer: user-service
+    expiration: 3600
     access-seconds: 900
     refresh-seconds: 604800
+admin-service:
+  url: https://localhost:8446
+  trust-store: classpath:tls/admin-truststore.p12
+  trust-store-password: user123

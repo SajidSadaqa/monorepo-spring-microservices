@@ -1,8 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
   <parent>
     <groupId>com.example</groupId>
     <artifactId>monorepo-spring-microservices</artifactId>
@@ -11,13 +12,13 @@
 
   <artifactId>user-service</artifactId>
   <name>user-service</name>
+
   <properties>
     <start-class>com.example.user.UserServiceApplication</start-class>
-    <mapstruct.version>1.5.5.Final</mapstruct.version>
   </properties>
 
   <dependencies>
-    <!-- Spring starters -->
+    <!-- Spring -->
     <dependency>
       <groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-web</artifactId>
     </dependency>
@@ -33,19 +34,21 @@
     <dependency>
       <groupId>org.postgresql</groupId><artifactId>postgresql</artifactId>
     </dependency>
-    <!-- Adds BearerTokenResolver and all OAuth2 Resource Server bits -->
+
+    <!-- OAuth2 resource server + JOSE-->
     <dependency>
       <groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.security</groupId><artifactId>spring-security-oauth2-jose</artifactId>
     </dependency>
 
     <!-- Flyway -->
     <dependency>
-      <groupId>org.flywaydb</groupId>
-      <artifactId>flyway-core</artifactId>
+      <groupId>org.flywaydb</groupId><artifactId>flyway-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.flywaydb</groupId>
-      <artifactId>flyway-database-postgresql</artifactId>
+      <groupId>org.flywaydb</groupId><artifactId>flyway-database-postgresql</artifactId>
     </dependency>
 
     <!-- OpenAPI -->
@@ -53,14 +56,10 @@
       <groupId>org.springdoc</groupId><artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
     </dependency>
 
-    <!-- JWT -->
+    <!-- MapStruct + Lombok (versions managed centrally) -->
     <dependency>
-      <groupId>org.springframework.security</groupId><artifactId>spring-security-oauth2-jose</artifactId>
-    </dependency>
-
-    <!-- MapStruct + Lombok -->
-    <dependency>
-      <groupId>org.mapstruct</groupId><artifactId>mapstruct</artifactId><version>${mapstruct.version}</version>
+      <groupId>org.mapstruct</groupId><artifactId>mapstruct</artifactId>
+      <version>${mapstruct.version}</version>
     </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId><artifactId>lombok</artifactId><scope>provided</scope>
@@ -68,7 +67,8 @@
 
     <!-- Test -->
     <dependency>
-      <groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope>
+      <groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId><artifactId>postgresql</artifactId><scope>test</scope>
@@ -76,17 +76,28 @@
     <dependency>
       <groupId>io.rest-assured</groupId><artifactId>rest-assured</artifactId><scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>io.projectreactor.netty</groupId>
+      <artifactId>reactor-netty-http</artifactId>
+      <!-- Version is managed by reactor-bom -->
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-webflux</artifactId>
+      <version>6.1.10</version> <!-- Use the appropriate Spring Framework version -->
+    </dependency>
+    <dependency>
+    <groupId>org.apache.httpcomponents.core5</groupId>
+    <artifactId>httpcore5</artifactId>
+    <version>5.2.5</version> <!-- Or the latest stable version -->
+    </dependency>
   </dependencies>
 
   <build>
     <plugins>
+      <!-- No custom compiler config here; we inherit from root pluginManagement -->
       <plugin>
         <groupId>org.springframework.boot</groupId><artifactId>spring-boot-maven-plugin</artifactId>
-      </plugin>
-      <!-- Add the compiler plugin explicitly -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
       </plugin>
     </plugins>
   </build>
