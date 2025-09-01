@@ -1,0 +1,156 @@
+package com.example.user.infrastructure.security;
+
+import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import com.nimbusds.jose.proc.SecurityContext;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.KeyFactory;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.X509EncodedKeySpec;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwsHeader;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.stereotype.Component;
+
+@Component
+public class JwtService {
+
+  // HS256 (local mint & verify)
+  private final JwtEncoder accessEncoder;
+  private final JwtDecoder hmacDecoder;
+
+  // Optional RS256 (verify admin-service tokens)
+  private final JwtDecoder rsaDecoder; // can be null if not configured
+
+  private final long accessSeconds;
+  private final long refreshSeconds;
+
+  public JwtService(
+    @Value("${security.jwt.access-seconds:900}") long accessSeconds,
+    @Value("${security.jwt.refresh-seconds:604800}") long refreshSeconds,
+    @Value("${security.jwt.hmac-secret:0123456789ABCDEF0123456789ABCDEF}") String secret,
+    // Optional: classpath:/ file:/ or filesystem path to PEM public key
+    @Value("${security.jwt.public-key:}") String publicKeyLocation
+  ) {
+    this.accessSeconds = accessSeconds;
+    this.refreshSeconds = refreshSeconds;
+
+    // HS256 encoder/decoder (existing behavior)
+    SecretKey key = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+    this.accessEncoder = new NimbusJwtEncoder(new ImmutableSecret<SecurityContext>(key));
+    this.hmacDecoder = NimbusJwtDecoder
+      .withSecretKey(key)
+      .macAlgorithm(MacAlgorithm.HS256)
+      .build();
+
+    // Optional RS256 decoder (verify-only) for admin-service tokens
+    this.rsaDecoder = loadRsaDecoder(publicKeyLocation);
+  }
+
+  public String createAccess(
+    String subject,
+    Collection<? extends GrantedAuthority> auths,
+    String issuer,
+    List<String> aud) {
+    Instant now = Instant.now();
+    JwtClaimsSet claims = JwtClaimsSet.builder()
+      .subject(subject)
+      .issuedAt(now)
+      .expiresAt(now.plus(accessSeconds, ChronoUnit.SECONDS))
+      .issuer(issuer)
+      .claim("roles", auths == null
+        ? null
+        : auths.stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
+      .audience(aud)
+      .build();
+
+    JwsHeader headers = JwsHeader.with(MacAlgorithm.HS256).build();
+    return accessEncoder.encode(JwtEncoderParameters.from(headers, claims)).getTokenValue();
+  }
+
+  public String createRefresh(String subject, String issuer) {
+    return createRefreshWithJti(subject, issuer, java.util.UUID.randomUUID().toString());
+  }
+
+  public String createRefreshWithJti(String subject, String issuer, String jti) {
+    Instant now = Instant.now();
+    JwtClaimsSet claims = JwtClaimsSet.builder()
+      .subject(subject)
+      .issuedAt(now)
+      .expiresAt(now.plus(refreshSeconds, ChronoUnit.SECONDS))
+      .issuer(issuer)
+      .claim("typ", "refresh")
+      .id(jti)
+      .build();
+
+    JwsHeader headers = JwsHeader.with(MacAlgorithm.HS256).build();
+    return accessEncoder.encode(JwtEncoderParameters.from(headers, claims)).getTokenValue();
+  }
+
+  public Jwt decode(String token) {
+    // Try RS256 first (admin-service), then HS256 (local)
+    if (rsaDecoder != null) {
+      try {
+        return rsaDecoder.decode(token);
+      } catch (RuntimeException ignored) {
+        // fall through to HMAC decode
+      }
+    }
+    return hmacDecoder.decode(token);
+  }
+
+  // --- Helpers ---
+
+  private JwtDecoder loadRsaDecoder(String location) {
+    if (location == null || location.isBlank()) {
+      return null;
+    }
+    try {
+      String pem = readLocation(location);
+      String base64 = pem.replaceAll("-----BEGIN (.*)-----", "")
+        .replaceAll("-----END (.*)-----", "")
+        .replaceAll("\\s", "");
+      byte[] der = Base64.getDecoder().decode(base64);
+      RSAPublicKey pk = (RSAPublicKey) KeyFactory.getInstance("RSA")
+        .generatePublic(new X509EncodedKeySpec(der));
+      return NimbusJwtDecoder.withPublicKey(pk).build();
+    } catch (Exception e) {
+      // If loading fails, ignore and rely on HS256 only
+      return null;
+    }
+  }
+
+  private String readLocation(String location) throws Exception {
+    if (location.startsWith("classpath:")) {
+      String path = location.substring("classpath:".length());
+      ClassPathResource res = new ClassPathResource(path);
+      try (InputStream in = res.getInputStream()) {
+        return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+      }
+    }
+    if (location.startsWith("file:")) {
+      return Files.readString(Path.of(new java.net.URI(location)));
+    }
+    // Plain filesystem path
+    return Files.readString(Path.of(location));
+  }
+}

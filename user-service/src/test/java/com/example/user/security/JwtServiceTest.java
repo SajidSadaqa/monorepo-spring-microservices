@@ -3,6 +3,8 @@ package com.example.user.security;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+
+import com.example.user.infrastructure.security.JwtService;
 import org.junit.jupiter.api.Test;
 
 class JwtServiceTest {
