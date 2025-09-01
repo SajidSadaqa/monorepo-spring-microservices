@@ -39,3 +39,6 @@ user-service:
   key-store-password: admin123
   key-password: admin123
 
+admin:
+  username: sajidadmin
+  passwordHash: $2a$12$O60Iha2knDjGhQMG.RqKq.s9LKugog4juGSzZamNI0XJPAiMVWgcC
