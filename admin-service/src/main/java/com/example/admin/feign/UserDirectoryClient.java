@@ -9,12 +9,16 @@ import org.springframework.web.bind.annotation.*;
 @FeignClient(
   name = "user-service",
   url = "${user-service.url}",
-  configuration = S2SFeignConfig.class)
+  configuration = S2SFeignConfig.class
+)
 public interface UserDirectoryClient {
 
-  @GetMapping("/internal/users/{id}")
+  @GetMapping("/api/users/{id}")
   UserResponse getUserById(@PathVariable("id") UUID id);
 
   @GetMapping("/api/users")
-  PageResponse<UserResponse> listUsers(@RequestParam int page, @RequestParam int size, @RequestParam(defaultValue = "createdAt,desc") String sort);
+  PageResponse<UserResponse> listUsers(@RequestParam int page,
+                                       @RequestParam int size,
+                                       @RequestParam(defaultValue = "createdAt,desc") String sort);
 }
+

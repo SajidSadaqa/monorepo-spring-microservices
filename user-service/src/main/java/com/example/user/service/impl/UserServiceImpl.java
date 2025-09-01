@@ -5,10 +5,14 @@ import com.example.user.dto.UserResponse;
 import com.example.user.mapper.UserMapper;
 import com.example.user.repository.UserRepository;
 import com.example.user.service.UserService;
+
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -29,15 +33,18 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  @PreAuthorize("hasRole('ADMIN') or #id.toString() == authentication.name")
-  public UserResponse getById(UUID id) {
-    var u = users.findById(id).orElseThrow(() -> new RuntimeException("error.not_found"));
+  public UserResponse getInternalById(UUID id) {
+    var u = users.findById(id)
+      .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
     return mapper.toDto(u);
   }
 
   @Override
-  public UserResponse getInternalById(UUID id) {
-    var u = users.findById(id).orElseThrow(() -> new RuntimeException("error.not_found"));
-    return mapper.toDto(u);
+  @PreAuthorize("hasRole('ADMIN') or #id.toString() == authentication.name")
+  public UserResponse getById(UUID id) {
+    return users.findById(id)
+      .map(UserResponse::fromEntity)  // map entity → DTO
+      .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
   }
+
 }
