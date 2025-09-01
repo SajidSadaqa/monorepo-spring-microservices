@@ -18,7 +18,7 @@ Both services are packaged as independent Spring Boot applications, secured with
 ## Architecture
 
 ### Key Characteristics
-- **Domain-Driven Design (DDD) Inspired**: Code is organized into `application`, `domain`,and `infrastructure` layers.
+- **Domain-Driven Design (DDD) Inspired**: Code is organized into `application`, `domain`,`infrastructure` and `interfaces`  layers.
 - **Service-to-Service Security**: Admin-service authenticates itself to user-service using minted JWT tokens signed by a trusted keypair.
 - **TLS Everywhere**: Each service runs with its own keystore and truststore. Mutual TLS is supported in development and production.
 - **Stateless**: Sessions are disabled. Authentication is purely token-based.
