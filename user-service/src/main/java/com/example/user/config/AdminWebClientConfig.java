@@ -17,8 +17,8 @@ import java.security.KeyStore;
 @Configuration
 public class AdminWebClientConfig {
 
-  @Value("classpath:tls/admin-truststore.p12")
-  private Resource adminTrustStore;
+  @Value("classpath:tls/user-truststore.p12")
+  private Resource userTrustStore;
 
   @Value("classpath:tls/user-keystore.p12")
   private Resource userKeyStore;
@@ -27,8 +27,8 @@ public class AdminWebClientConfig {
   public WebClient adminWebClient() throws Exception {
     // 1. Load truststore
     KeyStore trustStore = KeyStore.getInstance("PKCS12");
-    try (InputStream is = adminTrustStore.getInputStream()) {
-      trustStore.load(is, "admin123".toCharArray());
+    try (InputStream is = userTrustStore.getInputStream()) {
+      trustStore.load(is, "user123".toCharArray());
     }
     TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
     tmf.init(trustStore);

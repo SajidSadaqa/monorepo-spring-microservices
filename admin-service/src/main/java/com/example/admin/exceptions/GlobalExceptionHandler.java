@@ -61,6 +61,17 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(Exception.class)
   public ProblemDetail handleAll(Exception ex, WebRequest req, Locale locale) {
+        // Preserve status codes already expressed via ResponseStatusException
+          if (ex instanceof ResponseStatusException rse) {
+            throw rse; // let Spring map it to the correct HTTP status / ProblemDetail
+          }    // Optional: also unwrap nested causes
+          Throwable cause = ex.getCause();
+        while (cause != null) {
+            if (cause instanceof ResponseStatusException rse2) {
+                throw rse2;
+              }
+            cause = cause.getCause();
+          }
     return ProblemDetailsUtil.pd(500, "INTERNAL_ERROR", resolve("error.internal", locale), req);
   }
 

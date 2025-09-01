@@ -31,14 +31,25 @@ security:
     issuer: admin-service
     expiration: 3600
 
-user-service:
+s2s:
   url: https://localhost:8445
-  trust-store: classpath:tls/user-truststore.p12
-  trust-store-password: user123
-  key-store: classpath:tls/admin-keystore.p12
-  key-store-password: admin123
-  key-password: admin123
+  keystore:
+    path: classpath:tls/admin-keystore.p12
+    password: ${SSL_KEYSTORE_PASSWORD:admin123}
+  truststore:
+    path: classpath:tls/user-truststore.p12 # Make sure this is the correct truststore for the user-service
+    password: ${SSL_TRUSTSTORE_PASSWORD:user123} # Use the correct password
+  audience: user-service
 
 admin:
   username: sajidadmin
   passwordHash: $2a$12$O60Iha2knDjGhQMG.RqKq.s9LKugog4juGSzZamNI0XJPAiMVWgcC
+
+logging:
+  level:
+    com.example.admin: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.web.servlet.DispatcherServlet: TRACE
+    org.springframework.security: INFO
+    org.springframework.cloud.openfeign: DEBUG
+    feign: DEBUG

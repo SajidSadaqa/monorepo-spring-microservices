@@ -30,6 +30,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * Global error handler producing RFC-7807 ProblemDetails.
@@ -123,24 +124,21 @@ public class GlobalExceptionHandler {
     return build(HttpStatus.NOT_FOUND, "NOT_FOUND", ex.getMessage(), req, http);
   }
 
+  @ExceptionHandler(ResponseStatusException.class)
+  public ResponseEntity<ProblemDetail> handleResponseStatus(ResponseStatusException ex, WebRequest request, Locale locale) {
+    ProblemDetail problem = ProblemDetail.forStatusAndDetail(ex.getStatusCode(), ex.getReason());
+    problem.setTitle(ex.getStatusCode().toString());
+    return new ResponseEntity<>(problem, ex.getStatusCode());
+  }
+
   // --- Fallback ---
 
   @ExceptionHandler(Exception.class)
-  public ResponseEntity<ProblemDetail> handleAny(Exception ex, WebRequest req, HttpServletRequest http, Locale locale) {
-    // Structured log with request method+path; stacktrace logged server-side only
-    log.error("Unhandled exception on {} {} - {}", http.getMethod(), http.getRequestURI(), ex.toString(), ex);
-
-    ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR);
-    pd.setTitle("INTERNAL_ERROR");
-    pd.setDetail(resolve("error.internal", locale));
-    enrich(pd, req, http, Map.of("exception", ex.getClass().getName()));
-
-    // Expose debug fields only on non-prod profiles
-    if (env.acceptsProfiles(Profiles.of("dev", "test"))) {
-      pd.setProperty("message", ex.getMessage());
-      pd.setProperty("stacktrace", org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(ex));
-    }
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(pd);
+  public ResponseEntity<ProblemDetail> handleAny(Exception ex, WebRequest request, HttpServletRequest httpReq, Locale locale) {
+    // fallback for unexpected exceptions
+    ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Something went wrong.");
+    problem.setTitle("INTERNAL_ERROR");
+    return new ResponseEntity<>(problem, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
   // --- Helpers ---

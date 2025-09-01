@@ -5,9 +5,6 @@ server:
     key-store: classpath:tls/user-keystore.p12
     key-store-password: user123
     key-store-type: PKCS12
-    trust-store: classpath:tls/user-truststore.p12
-    trust-store-password: user123
-    trust-store-type: PKCS12
 
 spring:
   datasource:
@@ -31,7 +28,16 @@ security:
     expiration: 3600
     access-seconds: 900
     refresh-seconds: 604800
+    hmac-secret: "0123456789ABCDEF0123456789ABCDEF"
 admin-service:
   url: https://localhost:8446
   trust-store: classpath:tls/admin-truststore.p12
   trust-store-password: user123
+logging:
+  level:
+    com.example.admin: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.web.servlet.DispatcherServlet: TRACE
+    org.springframework.security: INFO
+    org.springframework.cloud.openfeign: DEBUG
+    feign: DEBUG

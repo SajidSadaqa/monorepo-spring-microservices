@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 @FeignClient(
   name = "user-service",
-  url = "${user-service.url}",
+  url = "${s2s.url}",
   configuration = S2SFeignConfig.class
 )
 public interface UserDirectoryClient {

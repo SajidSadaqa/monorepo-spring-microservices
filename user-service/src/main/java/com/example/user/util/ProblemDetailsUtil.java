@@ -2,8 +2,12 @@ package com.example.user.util;
 
 import java.net.URI;
 import java.time.Instant;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.server.ResponseStatusException;
 
 public final class ProblemDetailsUtil {
   private ProblemDetailsUtil() {}
