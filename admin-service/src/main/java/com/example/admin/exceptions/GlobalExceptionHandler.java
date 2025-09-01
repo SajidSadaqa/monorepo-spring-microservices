@@ -11,6 +11,7 @@ import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -62,6 +63,16 @@ public class GlobalExceptionHandler {
   public ProblemDetail handleAll(Exception ex, WebRequest req, Locale locale) {
     return ProblemDetailsUtil.pd(500, "INTERNAL_ERROR", resolve("error.internal", locale), req);
   }
+
+  // Preserve HTTP status codes coming from downstream (e.g., Feign -> ResponseStatusException)
+      @ExceptionHandler(ResponseStatusException.class)
+  public ProblemDetail handleResponseStatus(ResponseStatusException ex, WebRequest req, Locale locale) {
+        int status = ex.getStatusCode().value();
+        HttpStatus hs = HttpStatus.resolve(status);
+        String code = (hs != null ? hs.name() : ("HTTP_" + status));
+        String detail = (ex.getReason() != null ? ex.getReason() : resolve("error.internal", locale));
+        return ProblemDetailsUtil.pd(status, code, detail, req);
+      }
 
   private String resolve(String keyOrMsg, Locale locale) {
     try {

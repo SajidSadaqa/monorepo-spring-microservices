@@ -117,6 +117,12 @@ public class GlobalExceptionHandler {
     return build(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", resolve("auth.login.invalid", locale), req, http);
   }
 
+  @ExceptionHandler(ResourceNotFoundException.class)
+  public ResponseEntity<ProblemDetail> handleNotFound(ResourceNotFoundException ex,
+                                                      WebRequest req, HttpServletRequest http, Locale locale) {
+    return build(HttpStatus.NOT_FOUND, "NOT_FOUND", ex.getMessage(), req, http);
+  }
+
   // --- Fallback ---
 
   @ExceptionHandler(Exception.class)

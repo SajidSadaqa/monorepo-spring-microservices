@@ -13,6 +13,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import com.example.user.exceptions.ResourceNotFoundException;
+
+
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -33,18 +36,20 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public UserResponse getInternalById(UUID id) {
-    var u = users.findById(id)
+  // UserService
+  public UserResponse getById(UUID id) {
+    return users.findById(id)
+      .map(UserResponse::fromEntity)
       .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-    return mapper.toDto(u);
   }
+
+
 
   @Override
   @PreAuthorize("hasRole('ADMIN') or #id.toString() == authentication.name")
-  public UserResponse getById(UUID id) {
-    return users.findById(id)
-      .map(UserResponse::fromEntity)  // map entity → DTO
-      .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+  public UserResponse getInternalById(UUID id) {
+    var u = users.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + id));
+    return mapper.toDto(u);
   }
 
 }
