@@ -153,4 +153,21 @@ public class JwtService {
     // Plain filesystem path
     return Files.readString(Path.of(location));
   }
+
+  public String mintS2STokenForUserService() {
+    Instant now = Instant.now();
+    JwtClaimsSet claims = JwtClaimsSet.builder()
+      .issuer("admin-service")
+      .subject("admin-service")
+      .audience(List.of("user-service"))       // <-- REQUIRED for your filter
+      .claim("s2s", true)                      // <-- REQUIRED for your filter
+      .claim("scope", List.of("s2s"))          // optional, nice for @PreAuthorize
+      .issuedAt(now)
+      .expiresAt(now.plusSeconds(600))         // short-lived
+      .build();
+
+    JwsHeader jws = JwsHeader.with(MacAlgorithm.HS256).build();
+
+    return this.accessEncoder.encode(JwtEncoderParameters.from(jws, claims)).getTokenValue();
+  }
 }

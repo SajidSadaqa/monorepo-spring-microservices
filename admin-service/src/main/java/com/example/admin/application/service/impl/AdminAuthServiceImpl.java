@@ -13,7 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-public class IAdminAuthServiceImpl implements IAdminAuthService {
+public class AdminAuthServiceImpl implements IAdminAuthService {
 
   private final PasswordEncoder encoder;
   private final JwtTokenService jwtTokenService;
@@ -21,7 +21,7 @@ public class IAdminAuthServiceImpl implements IAdminAuthService {
   private final String adminUser;
   private final String adminPassHash;
 
-  public IAdminAuthServiceImpl(
+  public AdminAuthServiceImpl(
     PasswordEncoder encoder,
     JwtTokenService jwtTokenService,
     MessageSource ms,

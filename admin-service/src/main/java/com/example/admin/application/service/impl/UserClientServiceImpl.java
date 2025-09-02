@@ -6,7 +6,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 
 @AllArgsConstructor
-public class IUserClientServiceImpl implements IUserClientService {
+public class UserClientServiceImpl implements IUserClientService {
 
   private final WebClient userWebClient;
 
