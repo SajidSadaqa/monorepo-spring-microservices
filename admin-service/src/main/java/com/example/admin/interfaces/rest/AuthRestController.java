@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("/v1/admin")
 @Tag(name = "Admin Authentication")
 public class AuthRestController {
 
@@ -21,5 +21,6 @@ public class AuthRestController {
   public ResponseEntity<TokenResDto> login(@Valid @RequestBody AdminLoginReqDto req) {
     return ResponseEntity.ok(auth.login(req.username(), req.password()));
   }
+
 }
 

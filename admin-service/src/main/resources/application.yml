@@ -1,5 +1,7 @@
 server:
   port: 8446
+  servlet:
+    context-path: /api
   ssl:
     enabled: true
     key-store: classpath:tls/admin-keystore.p12
@@ -29,7 +31,7 @@ security:
   jwt:
     public-key: classpath:certs/jwt-public.pem
     private-key: classpath:certs/jwt-private.pem
-    access-seconds: 900
+    access-seconds: 500
     issuer: admin-service
     expiration: 3600
 

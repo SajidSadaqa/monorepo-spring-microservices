@@ -29,10 +29,22 @@ security:
     access-seconds: 900
     refresh-seconds: 604800
     hmac-secret: "0123456789ABCDEF0123456789ABCDEF"
+  filter-chain:
+    permit-all-patterns:
+      - "/v3/api-docs/**"
+      - "/swagger-ui/**"
+      - "/swagger-ui.html"
+      - "/api/admin/login"
+    admin-patterns:
+      - "/api/admin/**"
+    authorities-claim-name: "roles"
+    authority-prefix: ""
+
 admin-service:
   url: https://localhost:8446
   trust-store: classpath:tls/admin-truststore.p12
   trust-store-password: user123
+
 logging:
   level:
     com.example.admin: DEBUG
