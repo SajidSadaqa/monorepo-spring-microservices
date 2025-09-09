@@ -8,7 +8,7 @@ This repository demonstrates a production-grade microservices architecture built
 
 The system is composed of two core services:
 
-- **user-service**: Responsible for user management, authentication, and token issuance.
+- **user-service**: Responsible for userEntity management, authentication, and token issuance.
 - **admin-service**: Provides administrative operations and proxies requests to user-service using service-to-service (S2S) authentication.
 
 Both services are packaged as independent Spring Boot applications, secured with TLS, and communicate via HTTPS and signed JWT tokens.
@@ -49,44 +49,44 @@ Both services are packaged as independent Spring Boot applications, secured with
 ## Modules and Directories
 
 ### user-service
-- **application/**  
+- **application/**
   Contains use-case logic, DTOs, and service implementations.
-- **domain/**  
+- **domain/**
   JPA entities and aggregates representing core business data.
-- **infrastructure/**  
+- **infrastructure/**
   Database repositories, persistence configuration, and external integrations.
-- **web/**  
+- **web/**
   REST controllers exposing the API to clients.
-- **security/**  
+- **security/**
   JWT filters, S2S authorization filters, and Spring Security configuration.
-- **exceptions/**  
+- **exceptions/**
   Global exception handler returning structured `ProblemDetail` responses.
 
 ### admin-service
-- **application/**  
+- **application/**
   S2S communication layer with Feign clients, DTOs, and proxy services.
-- **security/**  
+- **security/**
   JWT minting for S2S calls and TLS configuration for outbound requests.
-- **web/**  
+- **web/**
   REST controllers exposing administrative APIs that proxy to user-service.
-- **exceptions/**  
-  Global exception handler aligned with user-service for consistent error models.
+- **exceptions/**
+  Global exception handler aligned with userservice for consistent error models.
 
 ---
 
 ## Security Model
 
-1. **TLS Setup**  
+1. **TLS Setup**
    - Each service owns a **keystore** (`*-keystore.p12`) containing its private key and certificate.
    - Each service trusts the other’s public certificate via a **truststore** (`*-truststore.p12`).
 
-2. **JWT Authentication**  
-   - End-user authentication uses `JwtAuthFilter` in user-service.
-   - Admin-service mints **service-to-service JWT tokens** with audience, roles, and type claims (`typ=s2s`).
+2. **JWT Authentication**
+   - End-userEntity authentication uses `JwtAuthFilter` in user-service.
+   - Admin-service mints **service-to-service JWT tokens** with audience, roleEntities, and type claims (`typ=s2s`).
    - User-service validates incoming S2S tokens with `S2SAuthorizationFilter`.
 
-3. **Authorization**  
-   - Endpoints are secured with role-based access checks.
+3. **Authorization**
+   - Endpoints are secured with roleEntity-based access checks.
    - `/api/auth/**` endpoints are public for login, signup, refresh.
    - `/internal/**` endpoints are reserved for S2S traffic.
    - All other endpoints require authentication.
@@ -107,11 +107,11 @@ Both services are packaged as independent Spring Boot applications, secured with
 
 Each service exposes OpenAPI documentation via SpringDoc:
 
-- **User Service**:  
-  https://localhost:8445/swagger-ui.html  
+- **User Service**:
+  https://localhost:8445/swagger-ui.html
 
-- **Admin Service**:  
-  https://localhost:8446/swagger-ui.html  
+- **Admin Service**:
+  https://localhost:8446/swagger-ui.html
 
 ---
 

@@ -27,7 +27,7 @@ public class S2SAuthorizationFilter extends OncePerRequestFilter {
     String uri = request.getRequestURI();
 
     // Only apply S2S filter to specific admin/system endpoints
-    // Regular user endpoints like /internal/users/* should NOT require S2S
+    // Regular userEntity endpoints like /internal/users/* should NOT require S2S
     boolean requiresS2S = uri.startsWith("/s2s/") ||
       uri.startsWith("/internal/admin/") ||
       uri.startsWith("/internal/system/");

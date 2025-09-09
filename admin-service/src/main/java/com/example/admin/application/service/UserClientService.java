@@ -1,5 +1,5 @@
 package com.example.admin.application.service;
 
-public interface IUserClientService {
+public interface UserClientService {
   String callUserHealth();
 }

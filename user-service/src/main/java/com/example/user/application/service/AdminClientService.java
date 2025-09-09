@@ -1,5 +1,5 @@
 package com.example.user.application.service;
 
-public interface IAdminClientService {
+public interface AdminClientService {
   String getAdminStatus() ;
 }

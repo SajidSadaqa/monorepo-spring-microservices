@@ -3,7 +3,7 @@ package com.example.user.interfaces.rest;
 import com.example.user.application.dto.AuthReq;
 import com.example.user.application.dto.SignupReq;
 import com.example.user.application.dto.TokenResponse;
-import com.example.user.application.service.IAuthApplicationService;
+import com.example.user.application.service.AuthApplicationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
@@ -17,14 +17,14 @@ import java.net.URI; // <-- add this import
 @Tag(name = "Authentication")
 public class AuthRestController {
 
-  private final IAuthApplicationService auth;
+  private final AuthApplicationService auth;
 
-  public AuthRestController(IAuthApplicationService auth) { this.auth = auth; }
+  public AuthRestController(AuthApplicationService auth) { this.auth = auth; }
 
   @PostMapping("/signup")
   public ResponseEntity<TokenResponse> signup(@Valid @RequestBody SignupReq req) {
     TokenResponse tokens = auth.signup(req);
-    // If you don’t have a user resource route, you can use URI.create("/api/auth/signup")
+    // If you don’t have a userEntity resource route, you can use URI.create("/api/auth/signup")
     return ResponseEntity
       .created(URI.create("/api/users/" + req.username())) // 201 + Location header
       .body(tokens);

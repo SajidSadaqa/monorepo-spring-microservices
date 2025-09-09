@@ -17,10 +17,10 @@ import java.security.KeyStore;
 @Configuration
 public class AdminWebClientConfig {
 
-  @Value("classpath:tls/user-truststore.p12")
+  @Value("classpath:tls/userEntity-truststore.p12")
   private Resource userTrustStore;
 
-  @Value("classpath:tls/user-keystore.p12")
+  @Value("classpath:tls/userEntity-keystore.p12")
   private Resource userKeyStore;
 
   @Bean

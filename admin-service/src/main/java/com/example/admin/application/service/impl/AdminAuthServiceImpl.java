@@ -1,6 +1,6 @@
 package com.example.admin.application.service.impl;
 
-import com.example.admin.application.service.IAdminAuthService;
+import com.example.admin.application.service.AdminAuthService;
 import com.example.admin.application.dto.response.TokenResDto;
 import com.example.admin.infrastructure.security.JwtTokenService;
 import java.time.Duration;
@@ -13,7 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-public class AdminAuthServiceImpl implements IAdminAuthService {
+public class AdminAuthServiceImpl implements AdminAuthService {
 
   private final PasswordEncoder encoder;
   private final JwtTokenService jwtTokenService;

@@ -13,7 +13,7 @@ public class OpenApiConfig {
   public OpenAPI openAPI() {
     final String scheme = "bearerAuth";
     return new OpenAPI()
-      .info(new Info().title("User Service API").version("v1"))
+      .info(new Info().title("UserEntity Service API").version("v1"))
       .components(
         new Components()
           .addSecuritySchemes(

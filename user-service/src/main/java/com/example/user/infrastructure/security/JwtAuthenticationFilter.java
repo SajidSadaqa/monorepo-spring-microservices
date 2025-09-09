@@ -38,7 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (jwt.getExpiresAt() != null && jwt.getExpiresAt().isBefore(Instant.now())) {
           throw new BadCredentialsException("jwt.expired");
         }
-        Object rolesObj = jwt.getClaims().get("roles");
+        Object rolesObj = jwt.getClaims().get("roleEntities");
         var authorities = new ArrayList<SimpleGrantedAuthority>();
         if (rolesObj instanceof Collection<?> col) {
           for (Object r : col) authorities.add(new SimpleGrantedAuthority(String.valueOf(r)));

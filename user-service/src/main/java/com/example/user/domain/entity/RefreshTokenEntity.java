@@ -1,4 +1,4 @@
-package com.example.user.domain.model;
+package com.example.user.domain.entity;
 
 import jakarta.persistence.*;
 import java.time.Instant;
@@ -11,14 +11,14 @@ import lombok.*;
   @Index(name = "ix_refresh_tokens_revoked", columnList = "revoked")
 })
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-public class RefreshToken {
+public class RefreshTokenEntity {
   @Id
   @GeneratedValue
   private UUID id;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "user_id", nullable = false)
-  private User user;
+  private UserEntity userEntity;
 
   @Column(nullable = false, length = 36, unique = true)
   private String jti;

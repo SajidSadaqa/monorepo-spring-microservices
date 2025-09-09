@@ -1,4 +1,4 @@
-package com.example.user.domain.model;
+package com.example.user.domain.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -15,7 +15,7 @@ import lombok.*;
   @Index(name="ix_users_email", columnList = "email", unique = true)
 })
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-public class User {
+public class UserEntity {
   @Id @GeneratedValue private UUID id;
 
   @Column(nullable = false, length = 30)
@@ -43,5 +43,5 @@ public class User {
     name = "user_roles",
     joinColumns = @JoinColumn(name = "user_id"),
     inverseJoinColumns = @JoinColumn(name = "role_id"))
-  private Set<Role> roles = new HashSet<>();
+  private Set<RoleEntity> roleEntities = new HashSet<>();
 }

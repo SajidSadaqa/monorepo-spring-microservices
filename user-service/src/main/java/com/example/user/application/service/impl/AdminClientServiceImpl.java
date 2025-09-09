@@ -1,11 +1,11 @@
 package com.example.user.application.service.impl;
 
-import com.example.user.application.service.IAdminClientService;
+import com.example.user.application.service.AdminClientService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @AllArgsConstructor
-public class IAdminClientServiceImpl implements IAdminClientService {
+public class AdminClientServiceImpl implements AdminClientService {
   private final WebClient adminWebClient;
 
   public String getAdminStatus() {

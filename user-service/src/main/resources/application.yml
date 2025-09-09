@@ -2,7 +2,7 @@ server:
   port: 8445
   ssl:
     enabled: true
-    key-store: classpath:tls/user-keystore.p12
+    key-store: classpath:tls/userEntity-keystore.p12
     key-store-password: user123
     key-store-type: PKCS12
 
@@ -37,7 +37,7 @@ security:
       - "/api/admin/login"
     admin-patterns:
       - "/api/admin/**"
-    authorities-claim-name: "roles"
+    authorities-claim-name: "roleEntities"
     authority-prefix: ""
 
 admin-service:

@@ -1,9 +1,9 @@
 package com.example.user.application.service.impl;
 
+import com.example.user.application.dto.UserResponse;
 import com.example.user.application.mapper.IUserMapper;
-import com.example.user.application.service.IUserApplicationService;
+import com.example.user.application.service.UserApplicationService;
 import com.example.user.application.dto.PageResponse;
-import com.example.user.application.dto.UserResponseDto;
 import com.example.user.infrastructure.persistence.UserJpaRepository;
 
 import java.util.UUID;
@@ -17,37 +17,37 @@ import com.example.user.interfaces.exception.ResourceNotFoundException;
 
 
 @Service
-public class IUserApplicationServiceImpl implements IUserApplicationService {
+public class UserApplicationServiceImpl implements UserApplicationService {
 
   private final UserJpaRepository users;
   private final IUserMapper mapper;
 
-  public IUserApplicationServiceImpl(UserJpaRepository users, IUserMapper mapper) {
+  public UserApplicationServiceImpl(UserJpaRepository users, IUserMapper mapper) {
     this.users = users;
     this.mapper = mapper;
   }
 
   @Override
   @PreAuthorize("hasRole('ADMIN')")
-  public PageResponse<UserResponseDto> list(Pageable pageable) {
+  public PageResponse<UserResponse> list(Pageable pageable) {
     var page = users.findAll(pageable).map(mapper::toDto);
     return new PageResponse<>(page.getContent(), page.getNumber(), page.getSize(), page.getTotalElements(), page.getTotalPages());
   }
 
   @Override
-  // IUserApplicationService
-  public UserResponseDto getById(UUID id) {
+  // UserApplicationService
+  public UserResponse getById(UUID id) {
     return users.findById(id)
-      .map(UserResponseDto::fromEntity)
-      .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+      .map(UserResponse::fromEntity)
+      .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "UserEntity not found"));
   }
 
 
 
   @Override
   @PreAuthorize("hasRole('ADMIN') or #id.toString() == authentication.name")
-  public UserResponseDto getInternalById(UUID id) {
-    var u = users.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + id));
+  public UserResponse getInternalById(UUID id) {
+    var u = users.findById(id).orElseThrow(() -> new ResourceNotFoundException("UserEntity not found with ID: " + id));
     return mapper.toDto(u);
   }
 

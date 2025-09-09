@@ -1,13 +1,13 @@
-package com.example.user.domain.model;
+package com.example.user.domain.entity;
 
 import jakarta.persistence.*;
 import java.util.UUID;
 import lombok.*;
 
 @Entity
-@Table(name = "roles", uniqueConstraints = @UniqueConstraint(columnNames = "name"))
+@Table(name = "roleEntities", uniqueConstraints = @UniqueConstraint(columnNames = "name"))
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-public class Role {
+public class RoleEntity {
   @Id @GeneratedValue private UUID id;
 
   @Column(nullable = false, length = 50)

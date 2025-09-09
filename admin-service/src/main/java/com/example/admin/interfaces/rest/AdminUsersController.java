@@ -30,9 +30,6 @@ public class AdminUsersController {
     return client.getUserById(uuid);
   }
 
-  // DONE
-  //TODO : add validation for minimum and maximum page and size and sort type or format
-  // e.g. page >= 0, size between 1 and 100
   @GetMapping
   @PreAuthorize("hasRole('ADMIN')")
   public PageResDto<UserResDto> list(

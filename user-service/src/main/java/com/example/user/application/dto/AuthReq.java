@@ -2,6 +2,7 @@ package com.example.user.application.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import com.example.user.application.validation.ValidPassword;
 
 public record AuthReq(
   @NotBlank(message = "{auth.username.required}")
@@ -9,6 +10,6 @@ public record AuthReq(
   String username,
 
   @NotBlank(message = "{auth.password.required}")
-  @Pattern(regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d).{8,72}$", message = "{auth.password.weak}")
+  @ValidPassword(message = "{auth.password.invalid}")
   String password
 ) {}

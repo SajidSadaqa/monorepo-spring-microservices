@@ -1,12 +1,12 @@
 package com.example.admin.application.service.impl;
 
-import com.example.admin.application.service.IUserClientService;
+import com.example.admin.application.service.UserClientService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.reactive.function.client.WebClient;
 
 
 @AllArgsConstructor
-public class UserClientServiceImpl implements IUserClientService {
+public class UserClientServiceImpl implements UserClientService {
 
   private final WebClient userWebClient;
 

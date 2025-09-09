@@ -77,7 +77,7 @@ public class JwtService {
       .issuedAt(now)
       .expiresAt(now.plus(accessSeconds, ChronoUnit.SECONDS))
       .issuer(issuer)
-      .claim("roles", auths == null
+      .claim("roleEntities", auths == null
         ? null
         : auths.stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
       .audience(aud)

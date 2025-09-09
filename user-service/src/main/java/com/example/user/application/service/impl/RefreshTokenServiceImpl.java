@@ -1,8 +1,8 @@
 package com.example.user.application.service.impl;
 
-import com.example.user.application.service.IRefreshTokenService;
-import com.example.user.domain.model.RefreshToken;
-import com.example.user.domain.model.User;
+import com.example.user.application.service.RefreshTokenService;
+import com.example.user.domain.entity.RefreshTokenEntity;
+import com.example.user.domain.entity.UserEntity;
 import com.example.user.domain.repository.RefreshTokenRepository;
 import com.example.user.infrastructure.persistence.UserJpaRepository;
 import com.example.user.infrastructure.security.JwtService;
@@ -15,13 +15,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class IRefreshTokenServiceImpl implements IRefreshTokenService {
+public class RefreshTokenServiceImpl implements RefreshTokenService {
 
   private final RefreshTokenRepository tokens;
   private final UserJpaRepository users;
   private final JwtService jwt;
 
-  public IRefreshTokenServiceImpl(RefreshTokenRepository tokens, UserJpaRepository users, JwtService jwt) {
+  public RefreshTokenServiceImpl(RefreshTokenRepository tokens, UserJpaRepository users, JwtService jwt) {
     this.tokens = tokens;
     this.users = users;
     this.jwt = jwt;
@@ -29,12 +29,12 @@ public class IRefreshTokenServiceImpl implements IRefreshTokenService {
 
   @Override
   @Transactional
-  public String issueForUser(User user) {
+  public String issueForUser(UserEntity userEntity) {
     String jti = UUID.randomUUID().toString();
-    String token = jwt.createRefreshWithJti(user.getUsername(), "user-service", jti);
+    String token = jwt.createRefreshWithJti(userEntity.getUsername(), "user-service", jti);
     Jwt parsed = jwt.decode(token);
-    tokens.save(RefreshToken.builder()
-      .user(user)
+    tokens.save(RefreshTokenEntity.builder()
+      .userEntity(userEntity)
       .jti(jti)
       .expiresAt(parsed.getExpiresAt())
       .revoked(false)
@@ -73,8 +73,8 @@ public class IRefreshTokenServiceImpl implements IRefreshTokenService {
     // issue new
     String newToken = jwt.createRefreshWithJti(username, "user-service", newJti);
     Jwt parsedNew = jwt.decode(newToken);
-    tokens.save(RefreshToken.builder()
-      .user(user)
+    tokens.save(RefreshTokenEntity.builder()
+      .userEntity(user)
       .jti(newJti)
       .expiresAt(parsedNew.getExpiresAt())
       .revoked(false)
@@ -85,8 +85,8 @@ public class IRefreshTokenServiceImpl implements IRefreshTokenService {
 
   @Override
   @Transactional
-  public void revokeAllForUser(User user) {
-    List<RefreshToken> active = tokens.findByUser_IdAndRevokedFalse(user.getId());
+  public void revokeAllForUser(UserEntity userEntity) {
+    List<RefreshTokenEntity> active = tokens.findByUser_IdAndRevokedFalse(userEntity.getId());
     for (var t : active) { t.setRevoked(true); }
     tokens.saveAll(active);
   }

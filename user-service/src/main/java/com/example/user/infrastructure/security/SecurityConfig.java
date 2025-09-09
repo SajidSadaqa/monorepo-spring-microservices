@@ -27,7 +27,7 @@ public class SecurityConfig {
   @Bean
   JwtAuthenticationConverter jwtAuthenticationConverter() {
     JwtGrantedAuthoritiesConverter gac = new JwtGrantedAuthoritiesConverter();
-    gac.setAuthoritiesClaimName("roles"); // tell it to read from "roles"
+    gac.setAuthoritiesClaimName("roleEntities"); // tell it to read from "roleEntities"
     gac.setAuthorityPrefix("");            // don’t add "SCOPE_"
 
     JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
