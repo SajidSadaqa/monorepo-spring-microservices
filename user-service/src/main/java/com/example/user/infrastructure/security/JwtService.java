@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.security.core.GrantedAuthority;
@@ -32,6 +34,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
+@Slf4j
 public class JwtService {
 
   // HS256 (local mint & verify)
@@ -44,15 +47,22 @@ public class JwtService {
   private final long accessSeconds;
   private final long refreshSeconds;
 
+
   public JwtService(
+
     @Value("${security.jwt.access-seconds:900}") long accessSeconds,
     @Value("${security.jwt.refresh-seconds:604800}") long refreshSeconds,
     @Value("${security.jwt.hmac-secret:0123456789ABCDEF0123456789ABCDEF}") String secret,
     // Optional: classpath:/ file:/ or filesystem path to PEM public key
     @Value("${security.jwt.public-key:}") String publicKeyLocation
   ) {
+    log.info("Initializing JWT Service with access token duration: {}s, refresh token duration: {}s",
+      accessSeconds, refreshSeconds);
+
+
     this.accessSeconds = accessSeconds;
     this.refreshSeconds = refreshSeconds;
+
 
     // HS256 encoder/decoder (existing behavior)
     SecretKey key = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
@@ -64,58 +74,95 @@ public class JwtService {
 
     // Optional RS256 decoder (verify-only) for admin-service tokens
     this.rsaDecoder = loadRsaDecoder(publicKeyLocation);
+
+    if (rsaDecoder != null) {
+      log.info("RSA decoder initialized for external token verification");
+    } else {
+      log.info("RSA decoder not configured, using HMAC-only mode");
+    }
   }
 
-  public String createAccess(
-    String subject,
-    Collection<? extends GrantedAuthority> auths,
-    String issuer,
-    List<String> aud) {
-    Instant now = Instant.now();
-    JwtClaimsSet claims = JwtClaimsSet.builder()
-      .subject(subject)
-      .issuedAt(now)
-      .expiresAt(now.plus(accessSeconds, ChronoUnit.SECONDS))
-      .issuer(issuer)
-      .claim("roleEntities", auths == null
-        ? null
-        : auths.stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
-      .audience(aud)
-      .build();
+  public String createAccess(String subject, Collection<? extends GrantedAuthority> auths, String issuer, List<String> aud) {
+    log.debug("Creating access token for subject: {} with roles: {}", subject,
+      auths != null ? auths.stream().map(GrantedAuthority::getAuthority).toList() : "none");
 
-    JwsHeader headers = JwsHeader.with(MacAlgorithm.HS256).build();
-    return accessEncoder.encode(JwtEncoderParameters.from(headers, claims)).getTokenValue();
+    try {
+      Instant now = Instant.now();
+      JwtClaimsSet claims = JwtClaimsSet.builder()
+        .subject(subject)
+        .issuedAt(now)
+        .expiresAt(now.plus(accessSeconds, ChronoUnit.SECONDS))
+        .issuer(issuer)
+        .claim("roleEntities", auths == null ? null : auths.stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
+        .audience(aud)
+        .build();
+
+      JwsHeader headers = JwsHeader.with(MacAlgorithm.HS256).build();
+      String token = accessEncoder.encode(JwtEncoderParameters.from(headers, claims)).getTokenValue();
+
+      log.debug("Access token created successfully for subject: {}", subject);
+      return token;
+    } catch (Exception e) {
+      log.error("Failed to create access token for subject {}: {}", subject, e.getMessage(), e);
+      throw e;
+    }
   }
 
   public String createRefresh(String subject, String issuer) {
-    return createRefreshWithJti(subject, issuer, java.util.UUID.randomUUID().toString());
+    log.debug("Creating refresh token for subject: {}", subject);
+    try {
+      return createRefreshWithJti(subject, issuer, java.util.UUID.randomUUID().toString());
+    } catch (Exception e) {
+      log.error("Failed to create refresh token for subject {}: {}", subject, e.getMessage(), e);
+      throw e;
+    }
   }
 
   public String createRefreshWithJti(String subject, String issuer, String jti) {
-    Instant now = Instant.now();
-    JwtClaimsSet claims = JwtClaimsSet.builder()
-      .subject(subject)
-      .issuedAt(now)
-      .expiresAt(now.plus(refreshSeconds, ChronoUnit.SECONDS))
-      .issuer(issuer)
-      .claim("typ", "refresh")
-      .id(jti)
-      .build();
+    log.debug("Creating refresh token with JTI for subject: {}", subject);
+    try {
+      Instant now = Instant.now();
+      JwtClaimsSet claims = JwtClaimsSet.builder()
+        .subject(subject)
+        .issuedAt(now)
+        .expiresAt(now.plus(refreshSeconds, ChronoUnit.SECONDS))
+        .issuer(issuer)
+        .claim("typ", "refresh")
+        .id(jti)
+        .build();
+      JwsHeader headers = JwsHeader.with(MacAlgorithm.HS256).build();
+      String token = accessEncoder.encode(JwtEncoderParameters.from(headers, claims)).getTokenValue();
+      log.debug("Refresh token created successfully for subject: {}", subject);
+      return accessEncoder.encode(JwtEncoderParameters.from(headers, claims)).getTokenValue();
 
-    JwsHeader headers = JwsHeader.with(MacAlgorithm.HS256).build();
-    return accessEncoder.encode(JwtEncoderParameters.from(headers, claims)).getTokenValue();
+    } catch (Exception e) {
+      log.error("Failed to create refresh token for subject {}: {}", subject, e.getMessage(), e);
+      throw e;
+    }
   }
 
   public Jwt decode(String token) {
-    // Try RS256 first (admin-service), then HS256 (local)
-    if (rsaDecoder != null) {
-      try {
-        return rsaDecoder.decode(token);
-      } catch (RuntimeException ignored) {
-        // fall through to HMAC decode
+    log.debug("Attempting to decode JWT token");
+
+    try {
+      // Try RS256 first
+      if (rsaDecoder != null) {
+        try {
+          Jwt jwt = rsaDecoder.decode(token);
+          log.debug("Token decoded successfully using RSA decoder");
+          return jwt;
+        } catch (RuntimeException e) {
+          log.debug("RSA decode failed, trying HMAC: {}", e.getMessage());
+        }
       }
+
+      Jwt jwt = hmacDecoder.decode(token);
+      log.debug("Token decoded successfully using HMAC decoder");
+      return jwt;
+    } catch (Exception e) {
+      log.error("Token decode failed: {}", e.getMessage());
+      throw e;
     }
-    return hmacDecoder.decode(token);
   }
 
   // --- Helpers ---
