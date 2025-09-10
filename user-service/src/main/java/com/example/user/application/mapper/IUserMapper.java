@@ -12,7 +12,7 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface IUserMapper {
-  @Mapping(target = "roleEntities", expression = "java(mapRoles(userEntity.getRoleEntities()))")
+  @Mapping(target = "roles", expression = "java(mapRoles(userEntity.getRoleEntities()))")
   UserResponse toDto(UserEntity userEntity);
 
   default Set<String> mapRoles(Set<RoleEntity> roleEntities) {

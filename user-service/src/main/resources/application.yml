@@ -2,7 +2,7 @@ server:
   port: 8445
   ssl:
     enabled: true
-    key-store: classpath:tls/userEntity-keystore.p12
+    key-store: classpath:tls/user-keystore.p12
     key-store-password: user123
     key-store-type: PKCS12
 
@@ -14,7 +14,7 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     properties:
       hibernate.jdbc.time_zone: UTC
   flyway:

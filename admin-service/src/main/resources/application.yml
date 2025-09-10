@@ -27,7 +27,13 @@ spring:
   messages:
     basename: messages
     encoding: UTF-8
+
 security:
+  filter-chain:
+    permit-all-patterns: /api/public/**,/actuator/health,/swagger-ui/**,/v3/api-docs/**
+    admin-patterns: /api/admin/**
+    authorities-claim-name: roles
+    authority-prefix: ROLE_
   jwt:
     public-key: classpath:certs/jwt-public.pem
     private-key: classpath:certs/jwt-private.pem
@@ -41,8 +47,8 @@ s2s:
     path: classpath:tls/admin-keystore.p12
     password: ${SSL_KEYSTORE_PASSWORD:admin123}
   truststore:
-    path: classpath:tls/user-truststore.p12 # Make sure this is the correct truststore for the user-service
-    password: ${SSL_TRUSTSTORE_PASSWORD:user123} # Use the correct password
+    path: classpath:tls/user-truststore.p12
+    password: ${SSL_TRUSTSTORE_PASSWORD:user123}
   audience: user-service
 
 admin:

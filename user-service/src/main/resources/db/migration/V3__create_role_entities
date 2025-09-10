@@ -1,0 +1,8 @@
+-- Enable UUID generator extension if not already enabled
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+-- Create role_entities table
+CREATE TABLE role_entities (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(50) NOT NULL UNIQUE
+);

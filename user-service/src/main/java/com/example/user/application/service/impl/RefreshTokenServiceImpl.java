@@ -43,7 +43,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
       Jwt parsed = jwt.decode(token);
 
       RefreshTokenEntity tokenEntity = RefreshTokenEntity.builder()
-        .userEntity(userEntity)
+        .user(userEntity)
         .jti(jti)
         .expiresAt(parsed.getExpiresAt())
         .revoked(false)
@@ -115,7 +115,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
       Jwt parsedNew = jwt.decode(newToken);
 
       RefreshTokenEntity newTokenEntity = RefreshTokenEntity.builder()
-        .userEntity(user)
+        .user(user)
         .jti(newJti)
         .expiresAt(parsedNew.getExpiresAt())
         .revoked(false)

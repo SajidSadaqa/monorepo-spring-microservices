@@ -18,7 +18,7 @@ public class RefreshTokenEntity {
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "user_id", nullable = false)
-  private UserEntity userEntity;
+  private UserEntity user;
 
   @Column(nullable = false, length = 36, unique = true)
   private String jti;
