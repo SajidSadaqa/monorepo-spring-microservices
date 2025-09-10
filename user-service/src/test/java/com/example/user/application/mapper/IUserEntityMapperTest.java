@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class IUserEntityMapperTest {
 
-  private final IUserMapper mapper = Mappers.getMapper(IUserMapper.class);
+  private final UserMapper mapper = Mappers.getMapper(UserMapper.class);
 
   @Test
   void toDto_ShouldMapUserToDto() {

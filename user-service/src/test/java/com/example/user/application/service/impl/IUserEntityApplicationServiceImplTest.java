@@ -1,7 +1,7 @@
 package com.example.user.application.service.impl;
 
 import com.example.user.application.dto.UserResponse;
-import com.example.user.application.mapper.IUserMapper;
+import com.example.user.application.mapper.UserMapper;
 import com.example.user.domain.entity.UserEntity;
 import com.example.user.infrastructure.persistence.UserJpaRepository;
 import com.example.user.interfaces.exception.ResourceNotFoundException;
@@ -30,7 +30,7 @@ class IUserEntityApplicationServiceImplTest {
   @Mock
   private UserJpaRepository users;
   @Mock
-  private IUserMapper mapper;
+  private UserMapper mapper;
 
   private UserApplicationServiceImpl userService;
 

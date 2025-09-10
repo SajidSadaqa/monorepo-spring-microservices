@@ -1,7 +1,7 @@
 package com.example.user.application.service.impl;
 
 import com.example.user.application.dto.UserResponse;
-import com.example.user.application.mapper.IUserMapper;
+import com.example.user.application.mapper.UserMapper;
 import com.example.user.application.service.UserApplicationService;
 import com.example.user.application.dto.PageResponse;
 import com.example.user.infrastructure.persistence.UserJpaRepository;
@@ -23,9 +23,9 @@ import com.example.user.interfaces.exception.ResourceNotFoundException;
 public class UserApplicationServiceImpl implements UserApplicationService {
 
   private final UserJpaRepository users;
-  private final IUserMapper mapper;
+  private final UserMapper mapper;
 
-  public UserApplicationServiceImpl(UserJpaRepository users, IUserMapper mapper) {
+  public UserApplicationServiceImpl(UserJpaRepository users, UserMapper mapper) {
     this.users = users;
     this.mapper = mapper;
   }
