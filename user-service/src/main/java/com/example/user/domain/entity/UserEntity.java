@@ -1,5 +1,6 @@
 package com.example.user.domain.entity;
 
+import com.example.user.application.validation.ValidPassword;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -26,6 +27,7 @@ public class UserEntity {
   @Email(message = "{auth.email.invalid}")
   private String email;
 
+  @ValidPassword
   @Column(nullable = false)
   private String passwordHash;
 
