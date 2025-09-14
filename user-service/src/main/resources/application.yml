@@ -9,8 +9,8 @@ server:
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/users_db
-    username: postgres
-    password: AhmadSajidSura2003
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:AhmadSajidSura2003}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -20,6 +20,15 @@ spring:
   flyway:
     locations: classpath:db/migration
     baseline-on-migrate: true
+  # Redis connection configuration (defaults point to docker-compose service)
+  redis:
+    host: ${REDIS_HOST:redis}
+    port: ${REDIS_PORT:6379}
+  # Default cache configuration. TTL is in milliseconds.
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000
 
 security:
   jwt:

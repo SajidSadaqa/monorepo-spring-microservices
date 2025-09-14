@@ -14,7 +14,7 @@
   <name>user-service</name>
 
   <properties>
-    <start-class>com.example.userEntity.UserServiceApplication</start-class>
+    <start-class>com.microservices.userEntity.UserServiceApplication</start-class>
   </properties>
 
   <dependencies>
@@ -96,7 +96,21 @@
       <artifactId>spring-security-test</artifactId>
       <scope>test</scope>
     </dependency>
-
+    <!-- Redis support -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-redis</artifactId>
+    </dependency>
+    <!-- Enable Spring caching abstraction -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-cache</artifactId>
+    </dependency>
+    <!-- Connection pool for Lettuce (improves performance) -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-pool2</artifactId>
+    </dependency>
   </dependencies>
 
   <build>

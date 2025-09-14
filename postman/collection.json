@@ -1,35 +1,76 @@
 {
   "info": {
-    "name": "Monorepo Microservices",
-    "_postman_id": "e2b9b9df-0000-4000-9000-000000000001",
+    "name": "Monorepo Microservices Tests",
+    "_postman_id": "e3c3d7b5-1234-5678-9012-test123456",
+    "description": "Test user-service and admin-service with Redis caching",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "User - Signup",
+      "name": "User Signup",
       "request": {
         "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept-Language", "value": "en" }],
-        "url": { "raw": "http://localhost:8081/api/auth/signup", "host": ["http://localhost"], "port": "8081", "path": ["api", "auth", "signup"] },
-        "body": { "mode": "raw", "raw": "{\"username\":\"sajid\",\"password\":\"Str0ngPass!\",\"email\":\"sajid@example.com\"}" }
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"myuser\",\n  \"password\": \"mypass\",\n  \"email\": \"myuser@example.com\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/auth/signup",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "auth", "signup"]
+        }
       }
     },
     {
-      "name": "User - Login",
+      "name": "User Login",
       "request": {
         "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept-Language", "value": "en" }],
-        "url": { "raw": "http://localhost:8081/api/auth/login", "host": ["http://localhost"], "port": "8081", "path": ["api", "auth", "login"] },
-        "body": { "mode": "raw", "raw": "{\"username\":\"sajid\",\"password\":\"Str0ngPass!\"}" }
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"myuser\",\n  \"password\": \"mypass\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/auth/login",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "auth", "login"]
+        }
       }
     },
     {
-      "name": "Admin - Login",
+      "name": "Admin Login",
       "request": {
         "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept-Language", "value": "en" }],
-        "url": { "raw": "http://localhost:8082/api/admin/login", "host": ["http://localhost"], "port": "8082", "path": ["api", "admin", "login"] },
-        "body": { "mode": "raw", "raw": "{\"username\":\"admin\",\"password\":\"Admin#123\"}" }
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"yourpass\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8081/api/admin/login",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8081",
+          "path": ["api", "admin", "login"]
+        }
+      }
+    },
+    {
+      "name": "User Health (via Admin)",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8081/api/admin/call-user-health",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8081",
+          "path": ["api", "admin", "call-user-health"]
+        }
       }
     }
   ]

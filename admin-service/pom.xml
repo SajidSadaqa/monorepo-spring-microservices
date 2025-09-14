@@ -13,7 +13,7 @@
   <name>admin-service</name>
 
   <properties>
-    <start-class>com.example.admin.AdminServiceApplication</start-class>
+    <start-class>com.microservices.admin.AdminServiceApplication</start-class>
   </properties>
 
   <dependencies>
@@ -92,7 +92,21 @@
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-oauth2-jose</artifactId>
     </dependency>
-
+    <!-- Redis support -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-redis</artifactId>
+    </dependency>
+    <!-- Enable Spring caching abstraction -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-cache</artifactId>
+    </dependency>
+    <!-- Connection pool for Lettuce (improves performance) -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-pool2</artifactId>
+    </dependency>
 
   </dependencies>
 

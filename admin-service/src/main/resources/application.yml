@@ -14,7 +14,7 @@ server:
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/admin_db
-    username: postgres
+    username: ${POSTGRES_USER:postgres}
     password: ${POSTGRES_PASSWORD:AhmadSajidSura2003}
     driver-class-name: org.postgresql.Driver
   jpa:
@@ -27,6 +27,15 @@ spring:
   messages:
     basename: messages
     encoding: UTF-8
+  # Redis connection configuration (defaults point to docker-compose service)
+  redis:
+    host: ${REDIS_HOST:redis}
+    port: ${REDIS_PORT:6379}
+  # Default cache configuration. TTL is in milliseconds.
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000
 
 security:
   filter-chain:
