@@ -111,6 +111,35 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-pool2</artifactId>
     </dependency>
+
+    <!-- Observability / AOP for @Aspect weaving -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-aop</artifactId>
+    </dependency>
+
+    <!-- Micrometer Observation API (Spring Boot 3 already brings this transitively,
+         but keeping explicit to be crystal-clear) -->
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-observation</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-observation-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-test</artifactId>
+      <version>1.13.2</version> <!-- align with Micrometer version -->
+      <scope>test</scope>
+    </dependency>
+
+
+
   </dependencies>
 
   <build>
