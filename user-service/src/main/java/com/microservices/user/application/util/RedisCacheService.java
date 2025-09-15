@@ -68,6 +68,9 @@ public class RedisCacheService {
     }
   }
 
+  /*TODO: Naming must be changed not "Object" must be Generalized
+  * We need to Add CRUD Operations
+  */
   @SuppressWarnings("unchecked")
   public <V> Map<Object, V> getMap(String key, Class<V> valueType) {
     Map<Object, Object> raw = redisTemplate.opsForHash().entries(key);

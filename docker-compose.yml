@@ -1,12 +1,13 @@
 version: '3.8'
 services:
-  postgres:
+  postgressql:
     image: postgres:16
     container_name: postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: AhmadSajidSura2003
     ports:
+       # what could I change?
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
