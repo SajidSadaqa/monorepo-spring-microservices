@@ -62,7 +62,9 @@
       <version>${mapstruct.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.projectlombok</groupId><artifactId>lombok</artifactId><scope>provided</scope>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <!-- Test -->
@@ -138,7 +140,12 @@
       <scope>test</scope>
     </dependency>
 
-
+    <!-- Minio Client -->
+    <dependency>
+      <groupId>io.minio</groupId>
+      <artifactId>minio</artifactId>
+      <version>8.5.7</version>
+    </dependency>
 
   </dependencies>
 

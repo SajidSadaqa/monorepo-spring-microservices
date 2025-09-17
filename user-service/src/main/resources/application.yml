@@ -29,7 +29,10 @@ spring:
     type: redis
     redis:
       time-to-live: 600000
-
+  servlet:
+    multipart:
+        max-file-size: 10MB
+        max-request-size: 10MB
 security:
   jwt:
     public-key: classpath:certs/jwt-public.pem
@@ -71,3 +74,9 @@ logging:
     name: logs/user-service.log
     max-size: 100MB
     max-history: 30
+
+minio:
+  endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+  access-key: ${MINIO_ACCESS_KEY:minioadmin}
+  secret-key: ${MINIO_SECRET_KEY:minioadmin}
+  bucket-name: ${MINIO_BUCKET_NAME:uploads}
