@@ -29,7 +29,7 @@ spring:
     encoding: UTF-8
   # Redis connection configuration (defaults point to docker-compose service)
   redis:
-    host: ${REDIS_HOST:redis}
+    host: ${REDIS_HOST:localhost}
     port: ${REDIS_PORT:6379}
   # Default cache configuration. TTL is in milliseconds.
   cache:
@@ -62,7 +62,7 @@ s2s:
 
 admin:
   username: sajidadmin
-  passwordHash: $2a$12$O60Iha2knDjGhQMG.RqKq.s9LKugog4juGSzZamNI0XJPAiMVWgcC
+  passwordHash: $2a$12$EB/RgFp.HKGFn07snrIibu967XrJup4WxRF06BxLcfvcLcEmz8t2a
 
 logging:
   level:
