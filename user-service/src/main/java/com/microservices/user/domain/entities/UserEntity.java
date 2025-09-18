@@ -1,4 +1,4 @@
-package com.microservices.user.domain.entity;
+package com.microservices.user.domain.entities;
 
 import com.microservices.user.application.validation.ValidPassword;
 import jakarta.persistence.*;

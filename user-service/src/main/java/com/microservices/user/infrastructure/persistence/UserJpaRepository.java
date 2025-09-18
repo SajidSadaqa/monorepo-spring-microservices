@@ -1,6 +1,6 @@
 package com.microservices.user.infrastructure.persistence;
 
-import com.microservices.user.domain.entity.UserEntity;
+import com.microservices.user.domain.entities.UserEntity;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;

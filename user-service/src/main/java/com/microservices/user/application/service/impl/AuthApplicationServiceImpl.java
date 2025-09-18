@@ -1,8 +1,8 @@
 package com.microservices.user.application.service.impl;
 
 import com.microservices.user.application.service.RefreshTokenService;
-import com.microservices.user.domain.entity.RoleEntity;
-import com.microservices.user.domain.entity.UserEntity;
+import com.microservices.user.domain.entities.RoleEntity;
+import com.microservices.user.domain.entities.UserEntity;
 import com.microservices.user.application.dto.SignupReq;
 import com.microservices.user.application.dto.TokenResponse;
 import com.microservices.user.interfaces.exception.BusinessException;

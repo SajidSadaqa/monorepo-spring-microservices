@@ -3,6 +3,7 @@ package com.microservices.admin.infrastructure.security;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
@@ -28,33 +29,44 @@ public class JwtTokenService {
 
   public String mintAccess(String subject, Collection<? extends GrantedAuthority> auths, String issuer) {
     Instant now = Instant.now();
-    var claims =
-      JwtClaimsSet.builder()
-        .subject(subject)
-        .issuedAt(now)
-        .expiresAt(now.plus(accessSeconds, ChronoUnit.SECONDS))
-        .issuer(issuer)
-        .claim(
-          "roles",
-          auths == null
-            ? null
-            : auths.stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
-        .build();
+
+    // Strip ROLE_ prefix before putting in JWT
+    List<String> roles = auths == null ? List.of() :
+      auths.stream()
+        .map(GrantedAuthority::getAuthority)                    // "ROLE_ADMIN"
+        .map(a -> a.startsWith("ROLE_") ? a.substring(5) : a)   // → "ADMIN"
+        .collect(Collectors.toList());
+
+    var claims = JwtClaimsSet.builder()
+      .subject(subject)
+      .issuedAt(now)
+      .expiresAt(now.plus(accessSeconds, ChronoUnit.SECONDS))
+      .issuer(issuer)
+      .claim("roles", roles)  // ["ADMIN"] - without prefix
+      .build();
+
     return this.encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
   }
 
-  public String mintS2S(String subject, String issuer, String audience, Collection<String> roles) {
+  public String mintS2S(String subject, String issuer, String audience, List<String> authorities) {
     Instant now = Instant.now();
-    var claims =
-      JwtClaimsSet.builder()
-        .subject(subject)
-        .issuedAt(now)
-        .expiresAt(now.plus(accessSeconds, ChronoUnit.SECONDS))
-        .issuer(issuer)
-        .audience(java.util.List.of(audience))
-        .claim("roles", roles)
-        .claim("typ", "s2s")
-        .build();
-    return this.encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+
+    // Strip ROLE_ prefix from authorities before putting in JWT
+    List<String> roles = authorities == null ? List.of() :
+      authorities.stream()
+        .map(a -> a.startsWith("ROLE_") ? a.substring(5) : a)  // "ROLE_ADMIN" → "ADMIN"
+        .collect(Collectors.toList());
+
+    JwtClaimsSet claims = JwtClaimsSet.builder()
+      .subject(subject)
+      .issuer(issuer)
+      .audience(List.of(audience))
+      .issuedAt(now)
+      .expiresAt(now.plus(accessSeconds, ChronoUnit.SECONDS))
+      .claim("roles", roles)  // ["ADMIN"] - without prefix
+      .build();
+
+    return encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
   }
+
 }

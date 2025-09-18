@@ -1,4 +1,4 @@
-package com.microservices.user.domain.entity;
+package com.microservices.user.domain.entities;
 
 import org.junit.jupiter.api.Test;
 import java.time.Instant;

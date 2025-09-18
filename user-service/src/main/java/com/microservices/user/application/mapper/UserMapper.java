@@ -1,8 +1,8 @@
 package com.microservices.user.application.mapper;
 
 import com.microservices.user.application.dto.UserResponse;
-import com.microservices.user.domain.entity.RoleEntity;
-import com.microservices.user.domain.entity.UserEntity;
+import com.microservices.user.domain.entities.RoleEntity;
+import com.microservices.user.domain.entities.UserEntity;
 
 import java.util.Set;
 import java.util.stream.Collectors;

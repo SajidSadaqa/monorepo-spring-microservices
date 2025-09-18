@@ -38,7 +38,7 @@ class JwtServiceTest {
     assertThat(jwt.getSubject()).isEqualTo(subject);
     assertThat((String)jwt.getClaim("iss")).isEqualTo(issuer);
     assertThat(jwt.getAudience()).contains("user-service");
-    assertThat((List<?>) jwt.getClaim("roleEntities")).isEqualTo(List.of("ROLE_USER"));
+    assertThat((List<?>) jwt.getClaim("roles")).isEqualTo(List.of("ROLE_USER"));
 
     // Verify token structure
     assertThat(jwt.getIssuedAt()).isNotNull();
@@ -135,7 +135,7 @@ class JwtServiceTest {
 
     // Then
     Jwt jwt = jwtService.decode(token);
-    assertThat((List<?>) jwt.getClaim("roleEntities")).isEmpty();
+    assertThat((List<?>) jwt.getClaim("roles")).isEmpty();
   }
 
   @Test
@@ -154,7 +154,7 @@ class JwtServiceTest {
 
     // Then
     Jwt jwt = jwtService.decode(token);
-    assertThat((List<?>) jwt.getClaim("roleEntities")).isEqualTo(List.of("ROLE_USER", "ROLE_ADMIN"));
+    assertThat((List<?>) jwt.getClaim("roles")).isEqualTo(List.of("ROLE_USER", "ROLE_ADMIN"));
   }
 
   @Test

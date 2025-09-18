@@ -1,6 +1,6 @@
 package com.microservices.user.domain.repository;
 
-import com.microservices.user.domain.entity.RefreshTokenEntity;
+import com.microservices.user.domain.entities.RefreshTokenEntity;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

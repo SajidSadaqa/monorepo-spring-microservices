@@ -1,7 +1,13 @@
 package com.microservices.user.interfaces.rest;
 
 import com.microservices.user.application.service.fileUpload.EventDrivenFileStorageService;
+import com.microservices.user.application.service.fileUpload.FileMetadataService;
+import com.microservices.user.domain.entities.FileMetadataEntity;
+import com.microservices.user.domain.events.fileEvent.helpers.MultiFileUploadRequest;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,26 +17,29 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/files/event-driven")
 @RequiredArgsConstructor
 @Slf4j
-@Tag(name = "Event-Driven File Management", description = "Event-driven file upload, download and management operations")
+@Tag(name = "Event-Driven File Management", description = "File upload, download and management operations with async/event-driven approach")
 public class EventDrivenFileController {
 
   private final EventDrivenFileStorageService eventDrivenFileStorageService;
+  private final FileMetadataService fileMetadataService;
 
+  // ========== Async Upload ==========
   @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  @Operation(summary = "Upload a file asynchronously", description = "Upload a single file to storage with event-driven processing")
+  @Operation(summary = "Upload a file asynchronously", description = "Upload a single file with event-driven async storage")
   @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
   public CompletableFuture<ResponseEntity<Map<String, Object>>> uploadFileAsync(
     @RequestParam("file") MultipartFile file,
@@ -38,128 +47,143 @@ public class EventDrivenFileController {
     HttpServletRequest request) {
 
     try {
-      // Validate file
       validateFile(file);
-
       String uploadedBy = getCurrentUser(request);
 
-      // Upload file asynchronously with event publishing
       return eventDrivenFileStorageService.uploadFileAsync(file, folder, uploadedBy)
-        .thenApply(fileName -> {
+        .thenApply(fullPath -> {
+          String fileName = fullPath.substring(fullPath.lastIndexOf('/') + 1);
+
+          // Persist metadata
+          FileMetadataEntity metadata = FileMetadataEntity.builder()
+            .fileName(fileName)
+            .originalName(file.getOriginalFilename())
+            .contentType(file.getContentType())
+            .fileSize(file.getSize())
+            .folder(folder)
+            .bucket("uploads")
+            .uploadedBy(uploadedBy)
+            .filePath(fullPath)
+            .isActive(true)
+            .build();
+
+          fileMetadataService.saveMetadata(metadata);
+
+          String fileUrl = eventDrivenFileStorageService.getFileUrl(fullPath);
+
           Map<String, Object> response = new HashMap<>();
           response.put("success", true);
-          response.put("message", "File upload initiated successfully");
+          response.put("message", "File uploaded successfully (event-driven)");
           response.put("fileName", fileName);
           response.put("originalName", file.getOriginalFilename());
           response.put("fileSize", file.getSize());
           response.put("contentType", file.getContentType());
+          response.put("fileUrl", fileUrl);
           response.put("folder", folder);
-          response.put("uploadedBy", uploadedBy);
-          response.put("status", "COMPLETED");
+          response.put("id", metadata.getId());
 
-          log.info("File uploaded successfully: {} by user: {}", fileName, uploadedBy);
           return ResponseEntity.ok(response);
         })
-        .exceptionally(throwable -> {
-          log.error("Error in async file upload: {}", throwable.getMessage(), throwable);
-
-          Map<String, Object> errorResponse = new HashMap<>();
-          errorResponse.put("success", false);
-          errorResponse.put("error", "Failed to upload file: " + throwable.getMessage());
-          errorResponse.put("status", "FAILED");
-
-          return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        .exceptionally(ex -> {
+          log.error("Async upload failed: {}", ex.getMessage(), ex);
+          return createErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to upload file");
         });
 
-    } catch (IllegalArgumentException e) {
-      Map<String, Object> errorResponse = new HashMap<>();
-      errorResponse.put("success", false);
-      errorResponse.put("error", e.getMessage());
-      errorResponse.put("status", "VALIDATION_FAILED");
-
-      return CompletableFuture.completedFuture(
-        ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse)
-      );
     } catch (Exception e) {
-      log.error("Error initiating file upload: {}", e.getMessage(), e);
-
-      Map<String, Object> errorResponse = new HashMap<>();
-      errorResponse.put("success", false);
-      errorResponse.put("error", "Failed to initiate file upload");
-      errorResponse.put("status", "INITIATION_FAILED");
-
+      log.error("Error initiating async upload: {}", e.getMessage(), e);
       return CompletableFuture.completedFuture(
-        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse)
+        createErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to initiate upload")
       );
     }
   }
 
+  // ========== Async Batch Upload ==========
   @PostMapping(value = "/batch-upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  @Operation(summary = "Upload multiple files asynchronously", description = "Upload multiple files with event-driven processing")
+  @Operation(
+    summary = "Upload multiple files asynchronously",
+    description = "Upload multiple files with event-driven async processing",
+    requestBody = @RequestBody(
+      required = true,
+      content = @Content(
+        mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+        schema = @Schema(implementation = MultiFileUploadRequest.class)
+      )
+    )
+  )
   @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
   public CompletableFuture<ResponseEntity<Map<String, Object>>> uploadMultipleFilesAsync(
-    @RequestParam("files") MultipartFile[] files,
-    @RequestParam(value = "folder", required = false, defaultValue = "documents") String folder,
-    HttpServletRequest request) {
+    @ModelAttribute MultiFileUploadRequest request,
+    HttpServletRequest httpRequest) {
+
+    MultipartFile[] files = request.getFiles();
+    String folder = (request.getFolder() == null || request.getFolder().isBlank())
+      ? "documents" : request.getFolder();
+
+    log.info("Batch upload request: {} files → {}", (files != null ? files.length : 0), folder);
 
     try {
-      String uploadedBy = getCurrentUser(request);
+      String uploadedBy = getCurrentUser(httpRequest);
 
-      // Validate all files first
       for (MultipartFile file : files) {
         validateFile(file);
       }
 
-      // Create array of futures for all uploads
-      CompletableFuture<String>[] uploadFutures = new CompletableFuture[files.length];
+      List<CompletableFuture<Void>> futures = new ArrayList<>();
 
-      for (int i = 0; i < files.length; i++) {
-        uploadFutures[i] = eventDrivenFileStorageService.uploadFileAsync(files[i], folder, uploadedBy);
+      for (MultipartFile file : files) {
+        CompletableFuture<Void> f = eventDrivenFileStorageService
+          .uploadFileAsync(file, folder, uploadedBy)
+          .thenAccept(fullPath -> {
+            String fileName = fullPath.substring(fullPath.lastIndexOf('/') + 1);
+
+            FileMetadataEntity metadata = FileMetadataEntity.builder()
+              .fileName(fileName)
+              .originalName(file.getOriginalFilename())
+              .contentType(file.getContentType())
+              .fileSize(file.getSize())
+              .folder(folder)
+              .bucket("uploads")
+              .uploadedBy(uploadedBy)
+              .filePath(fullPath)
+              .isActive(true)
+              .build();
+
+            fileMetadataService.saveMetadata(metadata);
+            log.info("Batch metadata saved for {}", fileName);
+          });
+
+        futures.add(f);
       }
 
-      // Combine all futures
-      return CompletableFuture.allOf(uploadFutures)
+      return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
         .thenApply(v -> {
           Map<String, Object> response = new HashMap<>();
           response.put("success", true);
-          response.put("message", "Batch file upload completed successfully");
+          response.put("message", "Batch upload completed");
           response.put("totalFiles", files.length);
           response.put("folder", folder);
           response.put("uploadedBy", uploadedBy);
-          response.put("status", "COMPLETED");
 
-          log.info("Batch upload completed: {} files by user: {}", files.length, uploadedBy);
           return ResponseEntity.ok(response);
         })
-        .exceptionally(throwable -> {
-          log.error("Error in batch file upload: {}", throwable.getMessage(), throwable);
-
-          Map<String, Object> errorResponse = new HashMap<>();
-          errorResponse.put("success", false);
-          errorResponse.put("error", "Failed to upload one or more files: " + throwable.getMessage());
-          errorResponse.put("status", "FAILED");
-
-          return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        .exceptionally(ex -> {
+          log.error("Error in batch upload: {}", ex.getMessage(), ex);
+          return createErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to upload one or more files");
         });
 
     } catch (Exception e) {
-      log.error("Error initiating batch file upload: {}", e.getMessage(), e);
-
-      Map<String, Object> errorResponse = new HashMap<>();
-      errorResponse.put("success", false);
-      errorResponse.put("error", "Failed to initiate batch file upload");
-      errorResponse.put("status", "INITIATION_FAILED");
-
+      log.error("Batch upload initiation failed: {}", e.getMessage(), e);
       return CompletableFuture.completedFuture(
-        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse)
+        createErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Batch upload initiation failed")
       );
     }
   }
 
+  // ========== Download ==========
   @GetMapping("/download/{fileName:.+}")
   @Operation(summary = "Download a file with tracking", description = "Download a file by filename with access event tracking")
   @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-  public ResponseEntity<InputStreamResource> downloadFileWithTracking(
+  public ResponseEntity<?> downloadFileWithTracking(
     @PathVariable String fileName,
     HttpServletRequest request) {
 
@@ -168,20 +192,26 @@ public class EventDrivenFileController {
       String userAgent = request.getHeader("User-Agent");
       String ipAddress = getClientIpAddress(request);
 
+      FileMetadataEntity metadata = fileMetadataService.findByFileName(fileName)
+        .orElseThrow(() -> new IllegalArgumentException("No active file metadata found for: " + fileName));
+
       InputStream inputStream = eventDrivenFileStorageService.downloadFileWithTracking(
-        fileName, accessedBy, userAgent, ipAddress);
+        metadata.getFilePath(), accessedBy, userAgent, ipAddress);
 
       return ResponseEntity.ok()
-        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + extractOriginalName(fileName) + "\"")
-        .contentType(MediaType.APPLICATION_OCTET_STREAM)
+        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + metadata.getOriginalName() + "\"")
+        .contentType(MediaType.parseMediaType(metadata.getContentType()))
         .body(new InputStreamResource(inputStream));
 
+    } catch (IllegalArgumentException e) {
+      return createErrorResponse(HttpStatus.NOT_FOUND, e.getMessage());
     } catch (Exception e) {
-      log.error("Error downloading file with tracking: {}", e.getMessage(), e);
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+      log.error("Download error: {}", e.getMessage(), e);
+      return createErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to download file");
     }
   }
 
+  // ========== Delete ==========
   @DeleteMapping("/{fileName:.+}")
   @Operation(summary = "Delete a file with tracking", description = "Delete a file by filename with deletion event tracking")
   @PreAuthorize("hasRole('ADMIN')")
@@ -193,42 +223,40 @@ public class EventDrivenFileController {
     try {
       String deletedBy = getCurrentUser(request);
 
-      eventDrivenFileStorageService.deleteFileWithTracking(fileName, deletedBy, reason);
+      FileMetadataEntity metadata = fileMetadataService.findByFileName(fileName)
+        .orElseThrow(() -> new IllegalArgumentException("No active file metadata found for: " + fileName));
+
+      eventDrivenFileStorageService.deleteFileWithTracking(metadata.getFilePath(), deletedBy, reason);
+
+      metadata.setIsActive(false);
+      fileMetadataService.saveMetadata(metadata);
 
       Map<String, Object> response = new HashMap<>();
       response.put("success", true);
-      response.put("message", "File deleted successfully with event tracking");
+      response.put("message", "File deleted successfully");
       response.put("fileName", fileName);
-      response.put("deletedBy", deletedBy);
-      response.put("reason", reason);
 
       return ResponseEntity.ok(response);
 
+    } catch (IllegalArgumentException e) {
+      return createErrorResponse(HttpStatus.NOT_FOUND, e.getMessage());
     } catch (Exception e) {
-      log.error("Error deleting file with tracking: {}", e.getMessage(), e);
-
-      Map<String, Object> errorResponse = new HashMap<>();
-      errorResponse.put("success", false);
-      errorResponse.put("error", "Failed to delete file");
-
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+      log.error("Delete error: {}", e.getMessage(), e);
+      return createErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to delete file");
     }
   }
 
+  // ========== Helpers ==========
   private void validateFile(MultipartFile file) {
     if (file == null || file.isEmpty()) {
       throw new IllegalArgumentException("File cannot be empty");
     }
-
-    // Check file size (10MB limit)
     if (file.getSize() > 10 * 1024 * 1024) {
       throw new IllegalArgumentException("File size cannot exceed 10MB");
     }
-
-    // Check file type
     String contentType = file.getContentType();
     if (contentType == null || !isAllowedContentType(contentType)) {
-      throw new IllegalArgumentException("File type not allowed. Allowed types: PDF, DOC, DOCX, XLS, XLSX, JPG, JPEG, PNG");
+      throw new IllegalArgumentException("File type not allowed");
     }
   }
 
@@ -244,18 +272,12 @@ public class EventDrivenFileController {
       contentType.equals("text/plain");
   }
 
-  private String extractOriginalName(String fileName) {
-    String[] parts = fileName.split("_");
-    if (parts.length >= 3) {
-      return String.join("_", java.util.Arrays.copyOfRange(parts, 2, parts.length));
-    }
-    return fileName;
-  }
-
   private String getCurrentUser(HttpServletRequest request) {
-    // Extract user from JWT token or security context
-    // This depends on your authentication implementation
-    return "current-user"; // Replace with actual user extraction logic
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication != null && authentication.isAuthenticated()) {
+      return authentication.getName();
+    }
+    return "anonymous";
   }
 
   private String getClientIpAddress(HttpServletRequest request) {
@@ -263,12 +285,18 @@ public class EventDrivenFileController {
     if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
       return xForwardedFor.split(",")[0].trim();
     }
-
     String xRealIp = request.getHeader("X-Real-IP");
     if (xRealIp != null && !xRealIp.isEmpty()) {
       return xRealIp;
     }
-
     return request.getRemoteAddr();
+  }
+
+  private ResponseEntity<Map<String, Object>> createErrorResponse(HttpStatus status, String message) {
+    Map<String, Object> errorResponse = new HashMap<>();
+    errorResponse.put("success", false);
+    errorResponse.put("error", message);
+    errorResponse.put("status", status.value());
+    return ResponseEntity.status(status).body(errorResponse);
   }
 }

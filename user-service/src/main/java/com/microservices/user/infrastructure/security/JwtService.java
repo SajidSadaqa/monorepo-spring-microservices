@@ -82,31 +82,31 @@ public class JwtService {
     }
   }
 
-  public String createAccess(String subject, Collection<? extends GrantedAuthority> auths, String issuer, List<String> aud) {
-    log.debug("Creating access token for subject: {} with roles: {}", subject,
-      auths != null ? auths.stream().map(GrantedAuthority::getAuthority).toList() : "none");
+  public String createAccess(String subject,
+                             Collection<? extends GrantedAuthority> auths,
+                             String issuer,
+                             List<String> aud) {
+    Instant now = Instant.now();
 
-    try {
-      Instant now = Instant.now();
-      JwtClaimsSet claims = JwtClaimsSet.builder()
-        .subject(subject)
-        .issuedAt(now)
-        .expiresAt(now.plus(accessSeconds, ChronoUnit.SECONDS))
-        .issuer(issuer)
-        .claim("roleEntities", auths == null ? null : auths.stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
-        .audience(aud)
-        .build();
+    List<String> roles = auths == null ? List.of() :
+      auths.stream()
+        .map(GrantedAuthority::getAuthority)       // e.g. "ROLE_ADMIN"
+        .map(a -> a.startsWith("ROLE_") ? a.substring(5) : a) // -> "ADMIN"
+        .toList();
 
-      JwsHeader headers = JwsHeader.with(MacAlgorithm.HS256).build();
-      String token = accessEncoder.encode(JwtEncoderParameters.from(headers, claims)).getTokenValue();
+    JwtClaimsSet claims = JwtClaimsSet.builder()
+      .subject(subject)
+      .issuedAt(now)
+      .expiresAt(now.plus(accessSeconds, ChronoUnit.SECONDS))
+      .issuer(issuer)
+      .audience(aud)
+      .claim("roles", roles)          // <-- use "roles"
+      .build();
 
-      log.debug("Access token created successfully for subject: {}", subject);
-      return token;
-    } catch (Exception e) {
-      log.error("Failed to create access token for subject {}: {}", subject, e.getMessage(), e);
-      throw e;
-    }
+    JwsHeader headers = JwsHeader.with(MacAlgorithm.HS256).build();
+    return accessEncoder.encode(JwtEncoderParameters.from(headers, claims)).getTokenValue();
   }
+
 
   public String createRefresh(String subject, String issuer) {
     log.debug("Creating refresh token for subject: {}", subject);
@@ -206,15 +206,16 @@ public class JwtService {
     JwtClaimsSet claims = JwtClaimsSet.builder()
       .issuer("admin-service")
       .subject("admin-service")
-      .audience(List.of("user-service"))       // <-- REQUIRED for your filter
-      .claim("s2s", true)                      // <-- REQUIRED for your filter
-      .claim("scope", List.of("s2s"))          // optional, nice for @PreAuthorize
+      .audience(List.of("user-service"))
+      .claim("s2s", true)
+      .claim("scope", List.of("s2s"))
+      .claim("roles", List.of("ADMIN"))   // <-- add this
       .issuedAt(now)
-      .expiresAt(now.plusSeconds(600))         // short-lived
+      .expiresAt(now.plusSeconds(600))
       .build();
 
     JwsHeader jws = JwsHeader.with(MacAlgorithm.HS256).build();
-
     return this.accessEncoder.encode(JwtEncoderParameters.from(jws, claims)).getTokenValue();
   }
+
 }

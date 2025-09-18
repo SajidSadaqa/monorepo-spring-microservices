@@ -1,6 +1,6 @@
 package com.microservices.user.application.dto;
 
-import com.microservices.user.domain.entity.UserEntity;
+import com.microservices.user.domain.entities.UserEntity;
 import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;

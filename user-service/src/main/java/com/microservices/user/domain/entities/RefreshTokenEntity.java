@@ -1,4 +1,4 @@
-package com.microservices.user.domain.entity;
+package com.microservices.user.domain.entities;
 
 import jakarta.persistence.*;
 import java.time.Instant;

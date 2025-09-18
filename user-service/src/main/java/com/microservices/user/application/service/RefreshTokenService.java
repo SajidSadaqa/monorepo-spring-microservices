@@ -1,6 +1,6 @@
 package com.microservices.user.application.service;
 
-import com.microservices.user.domain.entity.UserEntity;
+import com.microservices.user.domain.entities.UserEntity;
 
 public interface RefreshTokenService {
   /** Issues a new refresh token for the given userEntity, persists its JTI and expiry, and returns the token. */

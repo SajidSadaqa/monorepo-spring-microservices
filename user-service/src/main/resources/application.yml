@@ -36,21 +36,22 @@ spring:
 security:
   jwt:
     public-key: classpath:certs/jwt-public.pem
-    issuer: user-service
+    issuer: admin-service
     expiration: 3600
     access-seconds: 900
     refresh-seconds: 604800
     hmac-secret: "0123456789ABCDEF0123456789ABCDEF"
   filter-chain:
     permit-all-patterns:
-      - "/v3/api-docs/**"
+      - "/api/public/**"
+      - "/actuator/health"
       - "/swagger-ui/**"
-      - "/swagger-ui.html"
-      - "/api/admin/login"
+      - "/v3/api-docs/**"
+      - "/api/v1/admin/login"    # ← Add this line
     admin-patterns:
       - "/api/admin/**"
-    authorities-claim-name: "roleEntities"
-    authority-prefix: ""
+    authorities-claim-name: roles
+    authority-prefix: "ROLE_"
 
 admin-service:
   url: https://localhost:8446
@@ -60,10 +61,11 @@ admin-service:
 logging:
   level:
     com.example.user: DEBUG
+    com.microservices.user: DEBUG  # Add this if your package is different
     com.example.user.application.service: INFO
     com.example.user.infrastructure.security: DEBUG
-    org.springframework.security: INFO
-    org.springframework.web: INFO
+    org.springframework.security: DEBUG  # Change from INFO to DEBUG
+    org.springframework.web: DEBUG       # Change from INFO to DEBUG
     org.springframework.transaction: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE

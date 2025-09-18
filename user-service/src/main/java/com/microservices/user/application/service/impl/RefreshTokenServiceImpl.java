@@ -1,8 +1,8 @@
 package com.microservices.user.application.service.impl;
 
 import com.microservices.user.application.service.RefreshTokenService;
-import com.microservices.user.domain.entity.RefreshTokenEntity;
-import com.microservices.user.domain.entity.UserEntity;
+import com.microservices.user.domain.entities.RefreshTokenEntity;
+import com.microservices.user.domain.entities.UserEntity;
 import com.microservices.user.domain.repository.RefreshTokenRepository;
 import com.microservices.user.infrastructure.persistence.UserJpaRepository;
 import com.microservices.user.infrastructure.security.JwtService;
@@ -14,7 +14,6 @@ import java.util.UUID;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

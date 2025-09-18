@@ -1,6 +1,6 @@
 package com.microservices.user.domain.repository;
 
-import com.microservices.user.domain.entity.RoleEntity;
+import com.microservices.user.domain.entities.RoleEntity;
 import java.util.Optional;
 import java.util.UUID;
 

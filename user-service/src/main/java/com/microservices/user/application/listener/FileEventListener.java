@@ -1,5 +1,7 @@
 package com.microservices.user.application.listener;
 
+import com.microservices.user.application.service.fileUpload.FileMetadataService;
+import com.microservices.user.domain.entities.FileMetadataEntity;
 import com.microservices.user.domain.events.fileEvent.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -7,14 +9,15 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class FileEventListener {
 
-  // You can inject any services you need for processing events
+  private final FileMetadataService fileMetadataService;
   // private final NotificationService notificationService;
-  // private final FileMetadataService fileMetadataService;
   // private final AuditService auditService;
 
   @EventListener
@@ -24,12 +27,9 @@ public class FileEventListener {
       event.getFileName(), event.getUploadId());
 
     try {
-      // Example: Log the upload initiation
+      // Log the upload initiation
       logFileActivity("UPLOAD_INITIATED", event.getFileName(), event.getUploadedBy(),
         "File upload initiated for: " + event.getOriginalFileName());
-
-      // Example: You could save upload metadata to database
-      // fileMetadataService.saveUploadInitiation(event);
 
       // Example: Send notification to admin for large files
       if (event.getFileSize() > 5 * 1024 * 1024) { // 5MB
@@ -56,8 +56,24 @@ public class FileEventListener {
       logFileActivity("UPLOAD_COMPLETED", event.getFileName(), event.getUploadedBy(),
         "File upload completed: " + event.getOriginalFileName());
 
-      // Example: Update file metadata in database
-      // fileMetadataService.saveUploadCompletion(event);
+      // ✅ CREATE AND SAVE FILE METADATA TO DATABASE
+      FileMetadataEntity metadata = FileMetadataEntity.builder()
+        .fileName(event.getFileName())                    // ✅ Just the filename: "20250918_020058_8953e3fe_9_1__1_.pdf"
+        .originalName(event.getOriginalFileName())        // Original name: "9 1 (1).pdf"
+        .filePath(event.getFolder() + "/" + event.getFileName())  // ✅ Full path: "documents/20250918_020058_8953e3fe_9_1__1_.pdf"
+        .folder(event.getFolder())                        // "documents"
+        .contentType(event.getContentType())
+        .fileSize(event.getFileSize())
+        .bucket("uploads")                                // Hard-coded bucket name (or inject from config)
+        .uploadedBy(event.getUploadedBy())
+        .isActive(true)
+        .createdAt(LocalDateTime.now())
+        .updatedAt(LocalDateTime.now())
+        .build();
+
+      FileMetadataEntity savedMetadata = fileMetadataService.save(metadata);
+      log.info("File metadata saved successfully: id={}, fileName={}, filePath={}",
+        savedMetadata.getId(), savedMetadata.getFileName(), savedMetadata.getFilePath());
 
       // Example: Trigger virus scanning
       // virusScanService.scanFile(event.getFileName());
@@ -115,8 +131,9 @@ public class FileEventListener {
       logFileActivity("FILE_DELETED", event.getFileName(), event.getDeletedBy(),
         "File deleted: " + event.getOriginalFileName() + ", Reason: " + event.getReason());
 
-      // Example: Update file metadata
-      // fileMetadataService.markAsDeleted(event);
+      // ✅ MARK FILE AS INACTIVE IN DATABASE
+      fileMetadataService.deactivateFile(event.getFileName());
+      log.info("File metadata deactivated for fileName={}", event.getFileName());
 
       // Example: Update user storage quota
       // userService.updateStorageUsage(event.getUploadedBy(), -event.getFileSize());
@@ -145,14 +162,19 @@ public class FileEventListener {
           "File accessed via " + event.getAccessType());
       }
 
+      // ✅ UPDATE LAST ACCESSED TIMESTAMP
+      fileMetadataService.findByFileName(event.getFileName())
+        .ifPresent(metadata -> {
+          metadata.setUpdatedAt(LocalDateTime.now());
+          fileMetadataService.saveMetadata(metadata);
+          log.debug("Updated last accessed time for fileName={}", event.getFileName());
+        });
+
       // Example: Update access statistics
       // analyticsService.recordFileAccess(event);
 
       // Example: Check for suspicious access patterns
       // securityService.checkAccessPattern(event);
-
-      // Example: Update last accessed timestamp
-      // fileMetadataService.updateLastAccessed(event.getFileName(), event.getTimestamp());
 
     } catch (Exception e) {
       log.error("Error processing FileAccessedEvent: {}", e.getMessage(), e);

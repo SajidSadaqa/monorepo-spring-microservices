@@ -1,7 +1,7 @@
 package com.microservices.user.application.dto;
 
-import com.microservices.user.domain.entity.RoleEntity;
-import com.microservices.user.domain.entity.UserEntity;
+import com.microservices.user.domain.entities.RoleEntity;
+import com.microservices.user.domain.entities.UserEntity;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;

@@ -50,8 +50,8 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     if (!adminUser.equals(username) || !encoder.matches(password, adminPassHash)) {
       throw new BadCredentialsException("auth.login.invalid");
     }
-    var roles = List.of(new SimpleGrantedAuthority("ROLE_ADMIN"));
-    String token = jwtTokenService.mintAccess(username, roles, "admin-service");
+    var authorities = List.of(new SimpleGrantedAuthority("ROLE_ADMIN"));
+    String token = jwtTokenService.mintAccess(username, authorities, "admin-service");
     long exp = Duration.ofMinutes(15).toSeconds();
     TokenResDto response = new TokenResDto(token, null, exp);
 

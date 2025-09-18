@@ -52,7 +52,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
           throw new BadCredentialsException("jwt.expired");
         }
 
-        Object rolesObj = jwt.getClaims().get("roleEntities");
+        Object rolesObj = jwt.getClaims().get("roles");
         var authorities = new ArrayList<SimpleGrantedAuthority>();
         if (rolesObj instanceof Collection<?> col) {
           for (Object r : col) {
